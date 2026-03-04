@@ -1,27 +1,28 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { FirebaseAuthGuard } from './guards/firebase-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
-    @Post('login')
+    @Post('sync')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Login or Register directly via phone number' })
-    @ApiResponse({ status: 200, description: 'JWT token and user returned' })
-    login(@Body() loginDto: LoginDto) {
-        return this.authService.loginDirect(loginDto);
+    @UseGuards(FirebaseAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Sync Firebase user to local database' })
+    @ApiResponse({ status: 200, description: 'User synced and returned' })
+    syncUser(@Request() req) {
+        return this.authService.syncFirebaseUser(req.user);
     }
 
     @Get('profile')
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(FirebaseAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get current user profile' })
     getProfile(@Request() req) {
-        return req.user;
+        return this.authService.getOrCreateUser(req.user);
     }
 }

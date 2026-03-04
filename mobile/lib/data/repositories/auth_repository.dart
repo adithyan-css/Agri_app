@@ -13,8 +13,8 @@ class AuthRepository {
 
   AuthRepository(this._authApi);
 
-  Future<UserModel> login(String phoneNumber, String password) async {
-    final response = await _authApi.login(phoneNumber, password);
+  Future<UserModel> login(String phoneNumber) async {
+    final response = await _authApi.login(phoneNumber);
     final token = response['token'];
     final userJson = response['user'];
 

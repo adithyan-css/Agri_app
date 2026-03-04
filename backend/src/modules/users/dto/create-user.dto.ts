@@ -3,6 +3,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../entities/user.entity';
 
 export class CreateUserDto {
+    @ApiPropertyOptional({ example: 'abc123firebaseuid' })
+    @IsOptional()
+    @IsString()
+    firebaseUid?: string;
+
     @ApiProperty({ example: '+919876543210' })
     @IsString()
     @IsNotEmpty()

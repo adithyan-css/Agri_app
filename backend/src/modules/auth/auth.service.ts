@@ -1,7 +1,5 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, Logger } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { LoginDto } from './dto/login.dto';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
@@ -10,29 +8,31 @@ export class AuthService {
 
     constructor(
         private usersService: UsersService,
-        private jwtService: JwtService,
     ) { }
 
-    async loginDirect(loginDto: LoginDto) {
-        let user = await this.usersService.findByPhoneNumber(loginDto.phoneNumber);
-
-        if (!user) {
-            // Auto-register via phone
-            user = await this.usersService.create({ phoneNumber: loginDto.phoneNumber });
-        }
-
-        const loginResponse = this.login(user);
-        return {
-            token: loginResponse.access_token,
-            user: loginResponse.user
-        };
+    /**
+     * Sync a Firebase-authenticated user to the local database.
+     * Creates the user if they don't exist, or returns the existing one.
+     */
+    async syncFirebaseUser(firebaseUser: { uid: string; email?: string; name?: string; phoneNumber?: string }): Promise<User> {
+        return this.getOrCreateUser(firebaseUser);
     }
 
-    login(user: User) {
-        const payload = { phoneNumber: user.phoneNumber, sub: user.id, role: user.role };
-        return {
-            access_token: this.jwtService.sign(payload),
-            user,
-        };
+    /**
+     * Get an existing user by Firebase UID, or create a new one.
+     */
+    async getOrCreateUser(firebaseUser: { uid: string; email?: string; name?: string; phoneNumber?: string }): Promise<User> {
+        let user = await this.usersService.findByFirebaseUid(firebaseUser.uid);
+
+        if (!user) {
+            this.logger.log(`Creating new user for Firebase UID: ${firebaseUser.uid}`);
+            user = await this.usersService.create({
+                firebaseUid: firebaseUser.uid,
+                phoneNumber: firebaseUser.phoneNumber || firebaseUser.email || firebaseUser.uid,
+                name: firebaseUser.name,
+            });
+        }
+
+        return user;
     }
 }

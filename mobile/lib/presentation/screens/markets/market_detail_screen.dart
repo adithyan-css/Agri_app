@@ -207,7 +207,7 @@ class MarketDetailScreen extends ConsumerWidget {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton.icon(
-                      onPressed: () => context.go('/profit-calculator'),
+                      onPressed: () => context.push('/profit-calculator'),
                       icon: const Icon(Icons.calculate),
                       label: const Text('Calculate Profit',
                           style: TextStyle(fontWeight: FontWeight.bold)),

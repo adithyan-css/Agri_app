@@ -13,11 +13,14 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -102,28 +105,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: AppTextStyles.bodySecondary,
                     ),
                     const SizedBox(height: 24),
-                    const Text('Phone Number', style: AppTextStyles.heading3),
+                    const Text('Email', style: AppTextStyles.heading3),
                     const SizedBox(height: 8),
                     TextField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
-                        prefixIcon: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('🇮🇳', style: TextStyle(fontSize: 20)),
-                              SizedBox(width: 6),
-                              Text('+91',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.textPrimary)),
-                            ],
-                          ),
+                        prefixIcon: const Icon(Icons.email_outlined,
+                            color: AppColors.textSecondary),
+                        hintText: 'Enter your email',
+                        filled: true,
+                        fillColor: AppColors.background,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
                         ),
-                        hintText: 'Enter your phone number',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Password', style: AppTextStyles.heading3),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock_outline,
+                            color: AppColors.textSecondary),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: AppColors.textSecondary,
+                          ),
+                          onPressed: () =>
+                              setState(() => _obscurePassword = !_obscurePassword),
+                        ),
+                        hintText: 'Enter your password',
                         filled: true,
                         fillColor: AppColors.background,
                         border: OutlineInputBorder(
@@ -153,6 +173,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold),
                               ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Google Sign-In button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        onPressed: authState.isLoading ? null : _handleGoogleLogin,
+                        icon: Image.network(
+                          'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                          width: 20,
+                          height: 20,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.g_mobiledata, size: 24),
+                        ),
+                        label: const Text(
+                          'Sign in with Google',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
                       ),
                     ),
                     if (authState.error != null)
@@ -203,16 +253,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _handleLogin() async {
-    final phone = _phoneController.text.trim();
-    if (phone.length < 10) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || !email.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please enter a valid 10-digit phone number')),
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return;
+    }
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters')),
       );
       return;
     }
 
-    final success = await ref.read(authProvider.notifier).login(phone);
+    final success = await ref.read(authProvider.notifier).login(email, password);
+    if (success && mounted) {
+      context.go('/');
+    }
+  }
+
+  void _handleGoogleLogin() async {
+    final success = await ref.read(authProvider.notifier).googleLogin();
     if (success && mounted) {
       context.go('/');
     }

@@ -6,12 +6,14 @@ import { Alert } from './entities/alert.entity';
 import { PriceMonitorService } from './price-monitor.service';
 import { CropsModule } from '../crops/crops.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Alert]),
         CropsModule,
         NotificationsModule,
+        UsersModule,
     ],
     controllers: [AlertsController],
     providers: [AlertsService, PriceMonitorService],

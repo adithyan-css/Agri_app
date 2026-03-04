@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/market_model.dart';
 import '../../models/nearby_market_profit_model.dart';
 import '../../../core/network/dio_client.dart';
+import '../local/local_data_service.dart';
 
 final marketApiProvider = Provider<MarketApi>((ref) {
   final dio = ref.watch(dioProvider);
@@ -17,11 +18,13 @@ class MarketApi {
   Future<List<MarketModel>> getAllMarkets() async {
     try {
       final response = await _dio.get('/markets');
-      return (response.data as List)
-          .map((item) => MarketModel.fromJson(item))
-          .toList();
+      final rawList = response.data as List;
+      // Cache for offline use
+      LocalDataService.cacheMarkets(rawList);
+      return rawList.map((item) => MarketModel.fromJson(item)).toList();
     } catch (e) {
-      rethrow;
+      // Fallback to cached / seed data when offline
+      return LocalDataService.getCachedMarkets();
     }
   }
 
@@ -38,13 +41,12 @@ class MarketApi {
           .map((item) => MarketModel.fromJson(item))
           .toList();
     } catch (e) {
-      rethrow;
+      // Fallback: return all cached markets (user can see them without distance)
+      return LocalDataService.getCachedMarkets();
     }
   }
 
   /// Find nearby markets WITH profit optimization.
-  /// Passes cropId so the backend calculates transport cost and profit.
-  /// Markets are returned sorted by profit (best first).
   Future<List<NearbyMarketProfitModel>> getNearbyMarketsWithProfit({
     required double lat,
     required double lng,
@@ -62,7 +64,8 @@ class MarketApi {
           .map((item) => NearbyMarketProfitModel.fromJson(item))
           .toList();
     } catch (e) {
-      rethrow;
+      // Return empty when offline — profit calculation requires backend
+      return [];
     }
   }
 }

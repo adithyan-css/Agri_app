@@ -35,6 +35,11 @@ class AlertRepository {
     );
   }
 
+  /// Toggle an alert's active status
+  Future<void> toggleAlert(String alertId, bool isActive) async {
+    return _alertApi.toggleAlert(alertId, isActive);
+  }
+
   /// Delete (deactivate) an existing alert
   Future<void> deleteAlert(String alertId) async {
     return _alertApi.deleteAlert(alertId);

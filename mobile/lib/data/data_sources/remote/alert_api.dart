@@ -55,6 +55,15 @@ class AlertApi {
     }
   }
 
+  /// Toggle an alert's active status
+  Future<void> toggleAlert(String alertId, bool isActive) async {
+    try {
+      await _dio.patch('/alerts/$alertId', data: {'isActive': isActive});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Delete (deactivate) an existing alert
   Future<void> deleteAlert(String alertId) async {
     try {

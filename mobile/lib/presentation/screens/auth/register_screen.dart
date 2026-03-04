@@ -14,16 +14,19 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   String _selectedLanguage = 'English';
   String _selectedState = 'Tamil Nadu';
   String _selectedCity = 'Coimbatore';
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _nameController.dispose();
-    _phoneController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -87,28 +90,46 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Phone
-                  const Text('Phone Number', style: AppTextStyles.heading3),
+                  // Email
+                  const Text('Email', style: AppTextStyles.heading3),
                   const SizedBox(height: 8),
                   TextField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      prefixIcon: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('🇮🇳', style: TextStyle(fontSize: 20)),
-                            SizedBox(width: 6),
-                            Text('+91',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary)),
-                          ],
-                        ),
+                      prefixIcon: const Icon(Icons.email_outlined,
+                          color: AppColors.textSecondary),
+                      hintText: 'Enter your email',
+                      filled: true,
+                      fillColor: AppColors.background,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
                       ),
-                      hintText: 'Enter phone number',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password
+                  const Text('Password', style: AppTextStyles.heading3),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock_outline,
+                          color: AppColors.textSecondary),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: AppColors.textSecondary,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                      hintText: 'Create a password (min 6 chars)',
                       filled: true,
                       fillColor: AppColors.background,
                       border: OutlineInputBorder(
@@ -232,20 +253,42 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   void _handleRegister() async {
-    if (_nameController.text.trim().isEmpty || _phoneController.text.trim().length < 10) {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields correctly')),
+        const SnackBar(content: Text('Please enter your name')),
       );
       return;
     }
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return;
+    }
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final success = await ref
           .read(authProvider.notifier)
-          .login(_phoneController.text.trim());
+          .register(email, password, name: name);
       if (success && mounted) {
         context.go('/');
+      } else if (mounted) {
+        final error = ref.read(authProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error ?? 'Registration failed. Please try again.')),
+        );
       }
     } catch (e) {
       if (mounted) {

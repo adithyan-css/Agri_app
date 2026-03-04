@@ -220,6 +220,7 @@ class PredictionsScreen extends ConsumerWidget {
               ],
             ),
           ),
+        ],
       ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 3),
     );

@@ -2,8 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { initializeFirebaseAdmin } from './config/firebase-admin.config';
 
 async function bootstrap() {
+    // Initialize Firebase Admin SDK before creating the app
+    initializeFirebaseAdmin();
+
     const app = await NestFactory.create(AppModule);
 
     app.setGlobalPrefix('api/v1');

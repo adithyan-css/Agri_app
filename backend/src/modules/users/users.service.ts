@@ -15,6 +15,10 @@ export class UsersService {
         return this.userRepository.findOne({ where: { phoneNumber } });
     }
 
+    async findByFirebaseUid(uid: string): Promise<User | undefined> {
+        return this.userRepository.findOne({ where: { firebaseUid: uid } });
+    }
+
     async create(createUserDto: CreateUserDto): Promise<User> {
         const user = this.userRepository.create(createUserDto);
         return this.userRepository.save(user);

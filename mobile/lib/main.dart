@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:agri_app/firebase_options.dart';
 import 'package:agri_app/config/theme.dart';
 import 'package:agri_app/config/routes.dart';
 import 'package:agri_app/l10n/l10n.dart';
 import 'package:agri_app/l10n/app_localizations.dart';
 import 'package:agri_app/presentation/providers/language_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const ProviderScope(child: AgriPriceApp()));
 }
 

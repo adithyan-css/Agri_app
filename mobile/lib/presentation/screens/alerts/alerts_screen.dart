@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/alert_model.dart';
 import '../../../data/repositories/alert_repository.dart';
+import '../../widgets/common/bottom_nav_bar.dart';
 import 'widgets/alert_card.dart';
 
 final alertsProvider = FutureProvider<List<AlertModel>>((ref) async {
@@ -130,6 +131,7 @@ class AlertsScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFF10b77f),
         child: const Icon(Icons.add, color: Colors.white),
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 3),
     );
   }
 }

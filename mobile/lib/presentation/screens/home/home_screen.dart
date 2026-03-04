@@ -278,7 +278,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: displayCrops.map<Widget>((crop) {
               return Expanded(
                 child: GestureDetector(
-                  onTap: () => context.go('/crop-detail/${crop.id}?name=${Uri.encodeComponent(crop.nameEn)}'),
+                  onTap: () => context.push('/crop-detail/${crop.id}?name=${Uri.encodeComponent(crop.nameEn)}'),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     padding: const EdgeInsets.all(12),
@@ -345,7 +345,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isOpen: market.isOpen ?? market.isActive,
               openHours: market.openHours ?? 'Hours N/A',
               showBestPrice: markets.indexOf(market) == 0,
-              onTap: () => context.go('/market-detail/${market.id}'),
+              onTap: () => context.push('/market-detail/${market.id}'),
             );
           }).toList(),
         );
