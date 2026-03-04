@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/market_provider.dart';
 
 class NearbyMarketsScreen extends ConsumerWidget {
@@ -17,7 +18,7 @@ class NearbyMarketsScreen extends ConsumerWidget {
           itemCount: markets.length,
           itemBuilder: (context, index) {
             final market = markets[index];
-            final bool isBest = index == 0; // Simple heuristic for demo
+            final bool isBest = index == 0;
             
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
@@ -34,25 +35,63 @@ class NearbyMarketsScreen extends ConsumerWidget {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text('${market.district}, ${market.state}'),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text('${market.district}, ${market.state}'),
+                        ],
+                      ),
+                      if (market.distanceKm != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${market.distanceKm!.toStringAsFixed(1)} km away',
+                          style: TextStyle(fontSize: 12, color: Colors.green.shade600, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                      if (market.openHours != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
+                            const SizedBox(width: 4),
+                            Text(market.openHours!, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                trailing: const Column(
+                trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('₹45/kg', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    Text('STABLE', style: TextStyle(color: Colors.blue, fontSize: 12)),
+                    if (isBest)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10b77f),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('BEST', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      ),
+                    const SizedBox(height: 4),
+                    Text(
+                      market.statusLabel,
+                      style: TextStyle(
+                        color: market.isOpen == true ? Colors.green : Colors.grey,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () {
                   ref.read(selectedMarketProvider.notifier).state = market;
-                  Navigator.pop(context);
+                  context.push('/market-detail/${market.id}');
                 },
               ),
             );

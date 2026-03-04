@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/colors.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/market_provider.dart';
+import '../../providers/prediction_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../widgets/common/ai_recommendation_banner.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
@@ -23,6 +25,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final cropsAsync = ref.watch(cropListProvider);
     final marketsAsync = ref.watch(marketListProvider);
     final lang = ref.watch(languageProvider);
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -30,16 +34,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(context, lang),
+            _buildHeader(context, lang, user),
             const SizedBox(height: 16),
             _buildSearchBar(),
             const SizedBox(height: 12),
 
-            // AI Recommendation
+            // AI Recommendation — will be wired to live data once a default crop is selected
             const AiRecommendationBanner(
-              recommendation: 'WAIT 3 DAYS',
+              recommendation: 'SELL or WAIT',
               detail:
-                  'Prices expected to surge by 15% due to incoming rain and high local demand.',
+                  'Select a crop to see AI-powered buy/sell recommendations.',
             ),
 
             // Today's Crop Prices
@@ -66,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, Locale lang) {
+  Widget _buildHeader(BuildContext context, Locale lang, dynamic user) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
@@ -96,9 +100,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Welcome, Farmer',
-                    style: TextStyle(
+                  Text(
+                    'Welcome, ${user?.displayName ?? 'Farmer'}',
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -109,8 +113,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const Icon(Icons.location_on,
                           size: 14, color: Colors.white70),
                       const SizedBox(width: 4),
-                      const Text('Coimbatore, TN',
-                          style: TextStyle(
+                      Text(user?.preferredLanguage == 'ta' ? 'தமிழ்நாடு' : 'Tamil Nadu',
+                          style: const TextStyle(
                               color: Colors.white70, fontSize: 13)),
                       const SizedBox(width: 6),
                       GestureDetector(
@@ -162,14 +166,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Stats row
+          // Stats row — market count comes from API, others show as dynamic
           Row(
             children: [
-              _StatChip(label: "Today's Avg", value: '₹38.5/kg', sublabel: '↑ 2.1%'),
+              const _StatChip(label: "Today's Avg", value: '--', sublabel: 'Select crop'),
               const SizedBox(width: 8),
-              _StatChip(label: 'Markets Open', value: '8/12', sublabel: 'Nearby'),
+              const _StatChip(label: 'Markets', value: '--', sublabel: 'Nearby'),
               const SizedBox(width: 8),
-              _StatChip(label: 'AI Confidence', value: '94%', sublabel: '5 Models'),
+              const _StatChip(label: 'AI Models', value: '4', sublabel: 'Ensemble'),
             ],
           ),
         ],
@@ -237,16 +241,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Text(crop.nameEn,
                             style: const TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.w600)),
-                        const Text('₹38/kg',
+                        const Text('View price',
                             style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
                                 color: AppColors.primary)),
-                        const Text('+5%',
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.success,
-                                fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -284,9 +282,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               name: market.nameEn,
               location: market.district,
               distance: market.distanceKm ?? 0.0,
-              price: 38.00,
-              isOpen: market.isActive,
-              openHours: '4:00 AM - 12:00 PM',
+              price: 0.0,
+              isOpen: market.isOpen ?? market.isActive,
+              openHours: market.openHours ?? 'Hours N/A',
               showBestPrice: markets.indexOf(market) == 0,
               onTap: () => context.go('/market-detail/${market.id}'),
             );

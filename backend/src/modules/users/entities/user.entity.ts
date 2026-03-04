@@ -25,6 +25,15 @@ export class User {
     @Column({ nullable: true })
     preferredLanguage: string; // e.g., 'en', 'ta'
 
+    @Column({ nullable: true })
+    fcmToken: string;
+
+    @Column({ type: 'float', nullable: true })
+    lat: number;
+
+    @Column({ type: 'float', nullable: true })
+    lng: number;
+
     @CreateDateColumn()
     createdAt: Date;
 

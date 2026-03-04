@@ -15,7 +15,7 @@ class AuthRepository {
 
   Future<UserModel> login(String phoneNumber, String password) async {
     final response = await _authApi.login(phoneNumber, password);
-    final token = response['accessToken'];
+    final token = response['token'];
     final userJson = response['user'];
 
     final prefs = await SharedPreferences.getInstance();

@@ -5,7 +5,7 @@ import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/auth/register_screen.dart';
 import '../presentation/screens/auth/otp_verification_screen.dart';
-import '../presentation/screens/crops/crop_detail_screen.dart';
+import '../presentation/screens/crop_detail/crop_detail_screen.dart';
 import '../presentation/screens/predictions/prediction_screen.dart';
 import '../presentation/screens/predictions/predictions_screen.dart';
 import '../presentation/screens/markets/nearby_markets_screen.dart';

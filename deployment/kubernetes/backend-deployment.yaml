@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agriprice-backend
+  labels:
+    app: agriprice-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agriprice-backend
+  template:
+    metadata:
+      labels:
+        app: agriprice-backend
+    spec:
+      containers:
+        - name: backend
+          image: agriprice-backend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: agriprice-secrets
+                  key: db-host
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: agriprice-secrets
+                  key: db-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: agriprice-secrets
+                  key: db-password
+            - name: DB_DATABASE
+              value: agriprice
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: agriprice-secrets
+                  key: jwt-secret
+            - name: ML_SERVICE_URL
+              value: http://agriprice-ml-service:8000
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: agriprice-secrets
+                  key: redis-url
+            - name: NODE_ENV
+              value: production
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agriprice-backend
+spec:
+  selector:
+    app: agriprice-backend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP

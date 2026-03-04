@@ -12,6 +12,12 @@ class LineChartWidget extends StatelessWidget {
   final bool showDots;
   final bool showGrid;
   final String? title;
+  /// Optional upper confidence band spots
+  final List<FlSpot>? upperBandSpots;
+  /// Optional lower confidence band spots
+  final List<FlSpot>? lowerBandSpots;
+  /// Color for confidence band lines
+  final Color? bandColor;
 
   const LineChartWidget({
     super.key,
@@ -25,10 +31,59 @@ class LineChartWidget extends StatelessWidget {
     this.showDots = true,
     this.showGrid = true,
     this.title,
+    this.upperBandSpots,
+    this.lowerBandSpots,
+    this.bandColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveBandColor = bandColor ?? lineColor.withOpacity(0.3);
+
+    final List<LineChartBarData> lineBars = [];
+
+    // Add confidence bands first (rendered behind main line)
+    if (upperBandSpots != null && upperBandSpots!.isNotEmpty) {
+      lineBars.add(
+        LineChartBarData(
+          spots: upperBandSpots!,
+          isCurved: true,
+          color: effectiveBandColor,
+          barWidth: 1,
+          dotData: const FlDotData(show: false),
+          dashArray: [5, 5],
+        ),
+      );
+    }
+    if (lowerBandSpots != null && lowerBandSpots!.isNotEmpty) {
+      lineBars.add(
+        LineChartBarData(
+          spots: lowerBandSpots!,
+          isCurved: true,
+          color: effectiveBandColor,
+          barWidth: 1,
+          dotData: const FlDotData(show: false),
+          dashArray: [5, 5],
+        ),
+      );
+    }
+
+    // Main prediction line
+    lineBars.add(
+      LineChartBarData(
+        spots: spots,
+        isCurved: true,
+        color: lineColor,
+        barWidth: 3,
+        isStrokeCapRound: true,
+        dotData: FlDotData(show: showDots),
+        belowBarData: BarAreaData(
+          show: true,
+          color: (areaColor ?? lineColor).withOpacity(0.1),
+        ),
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -40,20 +95,7 @@ class LineChartWidget extends StatelessWidget {
           height: height,
           child: LineChart(
             LineChartData(
-              lineBarsData: [
-                LineChartBarData(
-                  spots: spots,
-                  isCurved: true,
-                  color: lineColor,
-                  barWidth: 3,
-                  isStrokeCapRound: true,
-                  dotData: FlDotData(show: showDots),
-                  belowBarData: BarAreaData(
-                    show: true,
-                    color: (areaColor ?? lineColor).withOpacity(0.1),
-                  ),
-                ),
-              ],
+              lineBarsData: lineBars,
               titlesData: FlTitlesData(
                 topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -97,10 +139,14 @@ class LineChartWidget extends StatelessWidget {
                 touchTooltipData: LineTouchTooltipData(
                   getTooltipItems: (touchedSpots) {
                     return touchedSpots.map((spot) {
-                      return LineTooltipItem(
-                        '₹${spot.y.toStringAsFixed(2)}',
-                        const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      );
+                      // Only show tooltip for the main line (last bar in the list)
+                      if (spot.barIndex == lineBars.length - 1) {
+                        return LineTooltipItem(
+                          '₹${spot.y.toStringAsFixed(2)}',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        );
+                      }
+                      return null;
                     }).toList();
                   },
                 ),

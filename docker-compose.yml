@@ -5,7 +5,7 @@ services:
     image: postgis/postgis:15-3.3
     container_name: agriprice-db
     environment:
-      POSTGRES_USER: user
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: agriprice
     ports:
@@ -13,7 +13,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user -d agriprice" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d agriprice" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,7 +48,7 @@ services:
       - PORT=3000
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_USERNAME=user
+      - DB_USERNAME=postgres
       - DB_PASSWORD=password
       - DB_DATABASE=agriprice
       - ML_SERVICE_URL=http://ml-service:8000

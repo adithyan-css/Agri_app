@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agriprice-ml-service
+  labels:
+    app: agriprice-ml-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agriprice-ml-service
+  template:
+    metadata:
+      labels:
+        app: agriprice-ml-service
+    spec:
+      containers:
+        - name: ml-service
+          image: agriprice-ml:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: ML_PORT
+              value: "8000"
+            - name: ML_DEBUG
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agriprice-ml-service
+spec:
+  selector:
+    app: agriprice-ml-service
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP

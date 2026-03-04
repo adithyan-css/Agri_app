@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agriprice-postgres
+  labels:
+    app: agriprice-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agriprice-postgres
+  template:
+    metadata:
+      labels:
+        app: agriprice-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgis/postgis:15-3.3
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: agriprice-secrets
+                  key: db-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: agriprice-secrets
+                  key: db-password
+            - name: POSTGRES_DB
+              value: agriprice
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agriprice-postgres
+spec:
+  selector:
+    app: agriprice-postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

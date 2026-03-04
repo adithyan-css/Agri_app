@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/language_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -12,11 +13,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
-  String _selectedLanguage = 'English';
 
-  void _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('jwt_token');
+  void _logout() {
+    ref.read(authProvider.notifier).logout();
     if (mounted) {
       context.go('/login');
     }
@@ -24,6 +23,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final locale = ref.watch(languageProvider);
+    final langNotifier = ref.read(languageProvider.notifier);
+
+    final displayName = user?.displayName ?? 'Farmer';
+    final phone = user?.phoneNumber ?? '';
+    final roleLabel = user?.roleLabel ?? 'Farmer';
+    final selectedLanguage = locale.languageCode == 'ta' ? 'Tamil (தமிழ்)' : 'English';
+
     return Scaffold(
       appBar: AppBar(title: const Text('Profile & Settings')),
       body: ListView(
@@ -38,14 +47,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Center(
+          Center(
             child: Text(
-              'Kumar (Farmer)',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              '$displayName ($roleLabel)',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ),
-          const Center(
-            child: Text('+91 9876543210', style: TextStyle(color: Colors.grey, fontSize: 16)),
+          Center(
+            child: Text(phone, style: const TextStyle(color: Colors.grey, fontSize: 16)),
           ),
           const SizedBox(height: 32),
           
@@ -73,7 +82,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             leading: const Icon(Icons.language),
             title: const Text('Language'),
             trailing: DropdownButton<String>(
-              value: _selectedLanguage,
+              value: selectedLanguage,
               underline: const SizedBox(),
               items: ['English', 'Tamil (தமிழ்)'].map((String value) {
                 return DropdownMenuItem<String>(
@@ -82,9 +91,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 );
               }).toList(),
               onChanged: (newValue) {
-                setState(() {
-                  _selectedLanguage = newValue!;
-                });
+                if (newValue == 'Tamil (தமிழ்)') {
+                  langNotifier.setLanguage('ta');
+                } else {
+                  langNotifier.setLanguage('en');
+                }
               },
             ),
           ),

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/colors.dart';
 import '../../../config/theme.dart';
 import '../../providers/crop_provider.dart';
+import '../../providers/market_provider.dart';
+import '../../providers/prediction_provider.dart';
 import '../../widgets/common/green_gradient_header.dart';
 import '../../widgets/common/price_card.dart' as widgets;
 import '../../widgets/common/ai_recommendation_banner.dart';
@@ -18,7 +20,7 @@ class PricesScreen extends ConsumerStatefulWidget {
 }
 
 class _PricesScreenState extends ConsumerState<PricesScreen> {
-  String _selectedCrop = 'Tomato';
+  String _selectedCrop = '';
 
   String _getTamilName(String crop) {
     switch (crop.toLowerCase()) {
@@ -37,43 +39,10 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
     }
   }
 
-  String _getPrice(String crop) {
-    switch (crop.toLowerCase()) {
-      case 'tomato':
-        return '₹38.00/kg';
-      case 'onion':
-        return '₹30.00/kg';
-      case 'potato':
-        return '₹24.00/kg';
-      case 'rice':
-        return '₹42.00/kg';
-      case 'wheat':
-        return '₹28.00/kg';
-      default:
-        return '₹0.00/kg';
-    }
-  }
-
-  double _getPriceValue(String crop) {
-    switch (crop.toLowerCase()) {
-      case 'tomato':
-        return 38.0;
-      case 'onion':
-        return 30.0;
-      case 'potato':
-        return 24.0;
-      case 'rice':
-        return 42.0;
-      case 'wheat':
-        return 28.0;
-      default:
-        return 0.0;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final cropsAsync = ref.watch(cropListProvider);
+    final selectedMarket = ref.watch(selectedMarketProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -81,42 +50,56 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
         children: [
           const GreenGradientHeader(
             title: "Today's Prices",
-            subtitle: 'Updated: 2h ago',
+            subtitle: 'Live from API',
           ),
 
-          // Crop tabs
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: ['Tomato', 'Onion', 'Potato', 'Rice', 'Wheat'].map((crop) {
-                  final isSelected = _selectedCrop == crop;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedCrop = crop),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppColors.primary : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          crop,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : AppColors.textSecondary,
+          // Crop tabs — driven by actual crop list
+          cropsAsync.when(
+            data: (crops) {
+              if (_selectedCrop.isEmpty && crops.isNotEmpty) {
+                // Auto-select the first crop
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && _selectedCrop.isEmpty) {
+                    setState(() => _selectedCrop = crops.first.nameEn);
+                  }
+                });
+              }
+              return Container(
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: crops.map((crop) {
+                      final isSelected = _selectedCrop == crop.nameEn;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _selectedCrop = crop.nameEn),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primary : Colors.transparent,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              crop.nameEn,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: isSelected ? Colors.white : AppColors.textSecondary,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            },
+            loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
+            error: (_, __) => const SizedBox.shrink(),
           ),
 
           Expanded(
@@ -138,39 +121,31 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _selectedCrop,
+                          _selectedCrop.isNotEmpty ? _selectedCrop : 'Select a crop',
                           style: const TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                         Text(
-                          _getTamilName(_selectedCrop),
+                          _selectedCrop.isNotEmpty ? _getTamilName(_selectedCrop) : '',
                           style: const TextStyle(color: Colors.white60, fontSize: 12),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          _getPrice(_selectedCrop),
-                          style: const TextStyle(
-                            fontSize: 32,
+                        const Text(
+                          'Tap a crop above',
+                          style: TextStyle(
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Row(
-                          children: [
-                            _PriceStat(label: 'Daily Min/Max', value: '₹30 — ₹38'),
-                            SizedBox(width: 20),
-                            _PriceStat(label: 'Yesterday', value: '₹32.00'),
-                          ],
                         ),
                       ],
                     ),
                   ),
                 ),
 
-                // AI Recommendation
+                // AI Recommendation — placeholder until crop selected
                 const AiRecommendationBanner(
-                  recommendation: 'WAIT 3 DAYS',
-                  detail: 'Tomato price expected to rise 15% based on seasonal trends & market supply.',
+                  recommendation: 'SELECT A CROP',
+                  detail: 'Choose a crop above to see AI-powered sell/wait recommendations.',
                 ),
 
                 SectionHeader(
@@ -179,11 +154,11 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
                   onAction: () => context.push('/predictions'),
                 ),
 
-                // Trend chart placeholder
+                // Trend chart — will show real data when crop detail is viewed
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
-                    height: 160,
+                    height: 120,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -194,38 +169,15 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
                         ),
                       ],
                     ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Price Forecast', style: AppTextStyles.heading3),
-                              Text(
-                                '7-day forecast with 85% accuracy',
-                                style: AppTextStyles.caption,
-                              ),
-                            ],
-                          ),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          'Tap a crop to view detailed price trends and 7-day forecast',
+                          style: AppTextStyles.caption,
+                          textAlign: TextAlign.center,
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _BarChart(label: 'Oct 20', value: 0.6),
-                                _BarChart(label: 'Oct 22', value: 0.7),
-                                _BarChart(label: 'Today', value: 0.85, highlight: true),
-                                _BarChart(label: 'Oct 26', value: 0.75),
-                                _BarChart(label: 'Oct 28', value: 0.9),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -238,8 +190,8 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
                       return widgets.PriceCard(
                         cropName: crop.nameEn,
                         cropNameTamil: crop.nameTa,
-                        price: _getPriceValue(crop.nameEn),
-                        change: 5.2,
+                        price: 0.0,
+                        change: 0.0,
                         onTap: () => setState(() => _selectedCrop = crop.nameEn),
                       );
                     }).toList(),

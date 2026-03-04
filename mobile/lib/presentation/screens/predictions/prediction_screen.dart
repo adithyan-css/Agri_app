@@ -29,7 +29,9 @@ class _PredictionScreenState extends ConsumerState<PredictionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final forecastAsync = ref.watch(predictionProvider(widget.cropId));
+    final forecastAsync = ref.watch(
+      directForecastProvider((cropId: widget.cropId, marketId: widget.marketId)),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -141,7 +143,9 @@ class _PredictionScreenState extends ConsumerState<PredictionScreen> {
               Text('Engine Unavailable: $err'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.invalidate(predictionProvider(widget.cropId)),
+                onPressed: () => ref.invalidate(
+                  directForecastProvider((cropId: widget.cropId, marketId: widget.marketId)),
+                ),
                 child: const Text('Retry'),
               ),
             ],

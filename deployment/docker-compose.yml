@@ -1,0 +1,73 @@
+# Development Docker Compose
+# Usage: docker compose -f deployment/docker-compose.yml up -d
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: agriprice
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ml-service:
+    build:
+      context: ../ml-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      ML_PORT: 8000
+      ML_DEBUG: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_DATABASE: agriprice
+      REDIS_URL: redis://redis:6379
+      ML_SERVICE_URL: http://ml-service:8000
+      JWT_SECRET: dev_secret_change_in_production
+      PORT: 3000
+      NODE_ENV: development
+
+volumes:
+  pgdata_dev:

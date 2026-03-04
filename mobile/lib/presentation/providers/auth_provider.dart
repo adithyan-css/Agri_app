@@ -7,14 +7,16 @@ class AuthState {
   final UserModel? user;
   final bool isLoading;
   final String? error;
+  final bool otpSent;
 
-  AuthState({this.user, this.isLoading = false, this.error});
+  AuthState({this.user, this.isLoading = false, this.error, this.otpSent = false});
 
-  AuthState copyWith({UserModel? user, bool? isLoading, String? error}) {
+  AuthState copyWith({UserModel? user, bool? isLoading, String? error, bool? otpSent}) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
+      error: error,
+      otpSent: otpSent ?? this.otpSent,
     );
   }
 }
@@ -30,8 +32,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
     if (token != null) {
-      // For now, we assume valid or would fetch profile
-      // state = state.copyWith(user: ...);
+      try {
+        final dio = ref.read(dioProvider);
+        final response = await dio.get('/auth/profile');
+        state = state.copyWith(user: UserModel.fromJson(response.data));
+      } catch (_) {
+        // Token expired or invalid
+        await prefs.remove('jwt_token');
+      }
     }
   }
 
@@ -51,6 +59,48 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'Login failed. Please try again.');
+      return false;
+    }
+  }
+
+  /// Send OTP to the given phone number.
+  Future<bool> sendOtp(String phoneNumber) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/auth/send-otp', data: {'phoneNumber': phoneNumber});
+      state = state.copyWith(isLoading: false, otpSent: true);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Failed to send OTP. Please try again.');
+      return false;
+    }
+  }
+
+  /// Verify the OTP code. On success, stores the JWT and user in state.
+  Future<bool> verifyOtp(String phoneNumber, String otp) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.post('/auth/verify-otp', data: {
+        'phoneNumber': phoneNumber,
+        'otp': otp,
+      });
+
+      final token = response.data['token'];
+      final userJson = response.data['user'];
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt_token', token);
+
+      state = state.copyWith(
+        user: UserModel.fromJson(userJson),
+        isLoading: false,
+        otpSent: false,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Invalid OTP. Please try again.');
       return false;
     }
   }

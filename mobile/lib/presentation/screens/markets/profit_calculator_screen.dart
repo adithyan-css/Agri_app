@@ -65,29 +65,12 @@ class _TransportProfitScreenState extends ConsumerState<TransportProfitScreen> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'WAIT 3 DAYS',
+                    'Calculate Your Profit',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    'Supply drop expected this weekend. Sell on Mar 7 for better rates.',
+                    'Enter your crop details below to estimate transport cost and net profit.',
                     style: AppTextStyles.bodySecondary,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'Potential Profit: +₹6.50/kg',
-                      style: TextStyle(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -230,18 +213,9 @@ class _TransportProfitScreenState extends ConsumerState<TransportProfitScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const _MarketOption(
-                      name: 'Koyambedu Market',
-                      distance: '5.2 km',
-                      price: '₹38/kg',
-                      isTop: true,
-                    ),
-                    const SizedBox(height: 6),
-                    const _MarketOption(
-                      name: 'Ukkadam Market',
-                      distance: '8.1 km',
-                      price: '₹40/kg',
-                      isTop: false,
+                    const Text(
+                      'Use Nearby Markets screen to compare profit across markets.',
+                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                     ),
                   ],
                 ),

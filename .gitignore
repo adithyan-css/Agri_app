@@ -84,6 +84,15 @@ secrets.json
 google-services.json
 GoogleService-Info.plist
 
+# Data files (large CSVs, trained models)
+*.csv
+!**/seeds/*.csv
+ml-service/data/trained_models/
+
+# Kubernetes secrets (never commit real credentials)
+**/secrets.yaml
+!**/secrets.example.yaml
+
 # Docker
 .dockerignore
 

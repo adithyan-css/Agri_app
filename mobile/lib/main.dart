@@ -4,17 +4,20 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:agri_app/config/theme.dart';
 import 'package:agri_app/config/routes.dart';
 import 'package:agri_app/l10n/l10n.dart';
+import 'package:agri_app/presentation/providers/language_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: AgriPriceApp()));
 }
 
-class AgriPriceApp extends StatelessWidget {
+class AgriPriceApp extends ConsumerWidget {
   const AgriPriceApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(languageProvider);
+
     return MaterialApp.router(
       title: 'AgriPrice AI',
       theme: AppTheme.lightTheme,
@@ -22,7 +25,7 @@ class AgriPriceApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       routerConfig: appRouter,
       supportedLocales: L10n.supportedLocales,
-      locale: L10n.fallbackLocale,
+      locale: locale,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

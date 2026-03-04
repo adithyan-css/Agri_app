@@ -67,25 +67,25 @@ class MarketDetailScreen extends ConsumerWidget {
                     _InfoRow(
                       icon: Icons.location_on,
                       label: 'Location',
-                      value: '$district (5 km away)',
+                      value: '${selectedMarket?.district ?? district}',
                     ),
-                    const _InfoRow(
+                    _InfoRow(
                       icon: Icons.access_time,
                       label: 'Operating Hours',
-                      value: '4:00 AM - 12:00 PM',
+                      value: selectedMarket?.openHours ?? 'Not available',
                     ),
-                    const _InfoRow(
+                    _InfoRow(
                       icon: Icons.phone,
                       label: 'Phone',
-                      value: '+91 94876 12345',
+                      value: selectedMarket?.phone ?? 'Not available',
                     ),
                     _InfoRow(
                       icon: Icons.circle,
                       label: 'Status',
-                      value: selectedMarket?.isActive == true
+                      value: selectedMarket?.statusLabel ?? (selectedMarket?.isActive == true
                           ? 'Open'
-                          : 'Closed',
-                      valueColor: selectedMarket?.isActive == true
+                          : 'Closed'),
+                      valueColor: (selectedMarket?.isOpen ?? selectedMarket?.isActive) == true
                           ? AppColors.success
                           : AppColors.error,
                     ),
@@ -113,40 +113,20 @@ class MarketDetailScreen extends ConsumerWidget {
                           children: [
                             const Text('Current Market Price',
                                 style: AppTextStyles.heading3),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.chipGreen,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                '+8.5%',
-                                style: TextStyle(
-                                  color: AppColors.success,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        const Text('₹2,400 / Quintal',
-                            style: AppTextStyles.priceText),
-                        const Text('₹35.50 / kg',
+                        const Text('Select a crop to view price',
                             style: AppTextStyles.heading2),
                         const SizedBox(height: 8),
-                        const Text('Total Arrival: 120 Tons',
-                            style: AppTextStyles.bodySecondary),
-                        const Text('Last Updated: Today, 09:30 AM',
+                        const Text('Prices update automatically from API',
                             style: AppTextStyles.bodySecondary),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // AI Recommendation
+                  // AI Recommendation — placeholder until wired to prediction API
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -174,13 +154,13 @@ class MarketDetailScreen extends ConsumerWidget {
                           ],
                         ),
                         SizedBox(height: 8),
-                        Text('WAIT 3 DAYS',
+                        Text('Select a crop for advice',
                             style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textPrimary)),
                         Text(
-                          'Supply drop expected this weekend. Sell on Mar 7 for better rates.',
+                          'Navigate to crop detail to see AI-powered sell/wait recommendation.',
                           style: AppTextStyles.bodySecondary,
                         ),
                       ],

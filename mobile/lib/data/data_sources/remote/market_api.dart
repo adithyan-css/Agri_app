@@ -32,7 +32,7 @@ class MarketApi {
       final response = await _dio.get('/markets/nearby', queryParameters: {
         'lat': lat,
         'lng': lng,
-        'radius': radius,
+        'radiusKm': radius,
       });
       return (response.data as List)
           .map((item) => MarketModel.fromJson(item))

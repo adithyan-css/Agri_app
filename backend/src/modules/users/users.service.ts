@@ -27,4 +27,9 @@ export class UsersService {
         }
         return user;
     }
+
+    async update(id: string, data: Partial<User>): Promise<User> {
+        await this.userRepository.update(id, data);
+        return this.findOne(id);
+    }
 }

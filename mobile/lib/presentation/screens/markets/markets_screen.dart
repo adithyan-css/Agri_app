@@ -130,9 +130,9 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                       name: market.nameEn,
                       location: market.district,
                       distance: market.distanceKm ?? 0.0,
-                      price: 38.00,
-                      isOpen: market.isActive,
-                      openHours: '4:00 AM - 12:00 PM',
+                      price: 0.0,
+                      isOpen: market.isOpen ?? market.isActive,
+                      openHours: market.openHours ?? 'Hours N/A',
                       showBestPrice: i == 0,
                       onTap: () {
                         ref.read(selectedMarketProvider.notifier).state =

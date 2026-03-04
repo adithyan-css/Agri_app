@@ -45,7 +45,14 @@ class CropDetailScreen extends ConsumerWidget {
 
             // AI Prediction card
             forecastAsync.when(
-              data: (forecast) => PredictionCard(forecast: forecast),
+              data: (forecast) => forecast != null
+                  ? PredictionCard(forecast: forecast)
+                  : const Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text('Prediction data not available'),
+                      ),
+                    ),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, _) => Card(
                 child: Padding(
@@ -144,26 +151,47 @@ class CropDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildPriceTrendSection(BuildContext context, WidgetRef ref) {
-    // Provide demo price history data
-    final historyData = List.generate(7, (i) {
-      final date = DateTime.now().subtract(Duration(days: 6 - i));
-      return {
-        'date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
-        'price': 40.0 + (i * 1.5) + (i % 2 == 0 ? 2.0 : -1.0),
-      };
-    });
+    final selectedMarket = ref.watch(selectedMarketProvider);
+    final marketId = selectedMarket?.id ?? 'default';
+    final historyAsync = ref.watch(priceHistoryProvider((cropId: cropId, marketId: marketId, days: 30)));
 
-    return PriceTrendChart(historyData: historyData);
+    return historyAsync.when(
+      data: (historyData) {
+        if (historyData.isEmpty) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('No price history available'),
+            ),
+          );
+        }
+        return PriceTrendChart(historyData: historyData);
+      },
+      loading: () => const SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, _) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text('Price trend unavailable: $err'),
+        ),
+      ),
+    );
   }
 
   Widget _buildMarketComparison(BuildContext context) {
-    // Demo market comparison data
-    final marketPrices = [
-      {'market': 'Coimbatore', 'price': '48.50', 'trend': 'UP'},
-      {'market': 'Salem', 'price': '46.20', 'trend': 'STABLE'},
-      {'market': 'Madurai', 'price': '44.80', 'trend': 'DOWN'},
-      {'market': 'Erode', 'price': '45.90', 'trend': 'UP'},
-    ];
+    // TODO: Wire to real API — fetch prices across all markets for this crop
+    final marketPrices = <Map<String, String>>[];
+
+    if (marketPrices.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('Market comparison data loading...'),
+        ),
+      );
+    }
 
     return MarketComparisonTable(marketPrices: marketPrices);
   }

@@ -6,6 +6,11 @@ class MarketModel {
   final String state;
   final double? distanceKm;
   final bool isActive;
+  final double? lat;
+  final double? lng;
+  final String? phone;
+  final String? openHours;
+  final bool? isOpen;
 
   MarketModel({
     required this.id,
@@ -15,6 +20,11 @@ class MarketModel {
     required this.state,
     this.distanceKm,
     this.isActive = true,
+    this.lat,
+    this.lng,
+    this.phone,
+    this.openHours,
+    this.isOpen,
   });
 
   factory MarketModel.fromJson(Map<String, dynamic> json) {
@@ -26,10 +36,22 @@ class MarketModel {
       state: json['state'],
       distanceKm: json['distanceKm']?.toDouble(),
       isActive: json['isActive'] ?? true,
+      lat: (json['lat'] as num?)?.toDouble(),
+      lng: (json['lng'] as num?)?.toDouble(),
+      phone: json['phone'],
+      openHours: json['openHours'],
+      isOpen: json['isOpen'],
     );
   }
 
   String getName(String langCode) {
     return langCode == 'ta' ? nameTa : nameEn;
+  }
+
+  /// Status label for UI
+  String get statusLabel {
+    if (isOpen == true) return 'Open';
+    if (isOpen == false) return 'Closed';
+    return 'Unknown';
   }
 }
