@@ -35,8 +35,6 @@ dist/
 downloads/
 eggs/
 .flakes/
-lib/
-lib64/
 parts/
 sdist/
 var/
