@@ -148,7 +148,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               )
                             : const Text(
-                                'Send OTP / OTP அனுப்பு',
+                                'Sign In / உள்நுழை',
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold),
@@ -215,9 +215,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final success = await ref.read(authProvider.notifier).login(phone);
     if (success && mounted) {
       context.go('/');
-    } else if (mounted) {
-      // Navigate to OTP screen on login attempt
-      context.go('/otp-verification?phone=$phone');
     }
   }
 }

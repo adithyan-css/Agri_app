@@ -4,9 +4,45 @@ import 'package:go_router/go_router.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/market_provider.dart';
 import '../../providers/prediction_provider.dart';
+import '../../../data/repositories/crop_repository.dart';
 import 'widgets/price_trend_chart.dart';
 import 'widgets/prediction_card.dart';
 import 'widgets/market_comparison_table.dart';
+
+/// Provider that fetches prices across all markets for a given crop.
+/// Returns a list of {market, price, trend} maps.
+final _marketComparisonProvider = FutureProvider.family<List<Map<String, dynamic>>, String>(
+  (ref, cropId) async {
+    final markets = await ref.watch(marketListProvider.future);
+    final results = <Map<String, dynamic>>[];
+
+    for (final market in markets.take(8)) {
+      try {
+        final cropRepo = ref.read(cropRepositoryProvider);
+        final priceData = await cropRepo.getLatestPrice(cropId, market.id);
+        final price = priceData['price'];
+        if (price != null && price is num && price > 0) {
+          results.add({
+            'market': market.nameEn,
+            'price': price.toStringAsFixed(1),
+            'trend': priceData['trend'] ?? 'STABLE',
+          });
+        }
+      } catch (_) {
+        // Skip markets with no price data
+      }
+    }
+
+    // Sort by price descending — best price first
+    results.sort((a, b) {
+      final pa = double.tryParse(a['price'] ?? '0') ?? 0;
+      final pb = double.tryParse(b['price'] ?? '0') ?? 0;
+      return pb.compareTo(pa);
+    });
+
+    return results;
+  },
+);
 
 class CropDetailScreen extends ConsumerWidget {
   final String cropId;
@@ -68,7 +104,7 @@ class CropDetailScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Market comparison table
-            _buildMarketComparison(context),
+            _buildMarketComparison(context, ref),
             const SizedBox(height: 24),
 
             // Navigate to full prediction screen
@@ -180,19 +216,31 @@ class CropDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMarketComparison(BuildContext context) {
-    // TODO: Wire to real API — fetch prices across all markets for this crop
-    final marketPrices = <Map<String, String>>[];
+  Widget _buildMarketComparison(BuildContext context, WidgetRef ref) {
+    final comparisonAsync = ref.watch(_marketComparisonProvider(cropId));
 
-    if (marketPrices.isEmpty) {
-      return const Card(
+    return comparisonAsync.when(
+      data: (marketPrices) {
+        if (marketPrices.isEmpty) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('No market price data available for comparison.'),
+            ),
+          );
+        }
+        return MarketComparisonTable(marketPrices: marketPrices);
+      },
+      loading: () => const SizedBox(
+        height: 100,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, _) => Card(
         child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text('Market comparison data loading...'),
+          padding: const EdgeInsets.all(16),
+          child: Text('Market comparison unavailable: $err'),
         ),
-      );
-    }
-
-    return MarketComparisonTable(marketPrices: marketPrices);
+      ),
+    );
   }
 }

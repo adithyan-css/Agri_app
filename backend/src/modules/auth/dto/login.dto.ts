@@ -7,15 +7,3 @@ export class LoginDto {
     @IsNotEmpty()
     phoneNumber: string;
 }
-
-export class VerifyOtpDto {
-    @ApiProperty({ example: '+919876543210' })
-    @IsString()
-    @IsNotEmpty()
-    phoneNumber: string;
-
-    @ApiProperty({ example: '123456' })
-    @IsString()
-    @IsNotEmpty()
-    otp: string;
-}

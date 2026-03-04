@@ -246,8 +246,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           .login(_phoneController.text.trim());
       if (success && mounted) {
         context.go('/');
-      } else if (mounted) {
-        context.go('/otp-verification?phone=${_phoneController.text.trim()}');
       }
     } catch (e) {
       if (mounted) {

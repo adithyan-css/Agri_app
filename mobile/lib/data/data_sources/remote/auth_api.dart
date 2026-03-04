@@ -13,11 +13,10 @@ class AuthApi {
 
   AuthApi(this._dio);
 
-  Future<Map<String, dynamic>> login(String phoneNumber, String password) async {
+  Future<Map<String, dynamic>> login(String phoneNumber) async {
     try {
       final response = await _dio.post('/auth/login', data: {
         'phoneNumber': phoneNumber,
-        'password': password,
       });
       return response.data;
     } catch (e) {

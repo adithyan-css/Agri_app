@@ -1,6 +1,6 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, VerifyOtpDto } from './dto/login.dto';
+import { LoginDto } from './dto/login.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -12,25 +12,9 @@ export class AuthController {
     @Post('login')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Login or Register directly via phone number' })
+    @ApiResponse({ status: 200, description: 'JWT token and user returned' })
     login(@Body() loginDto: LoginDto) {
         return this.authService.loginDirect(loginDto);
-    }
-
-    @Post('send-otp')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Send OTP to phone number' })
-    @ApiResponse({ status: 200, description: 'OTP sent successfully' })
-    sendOtp(@Body() loginDto: LoginDto) {
-        return this.authService.sendOtp(loginDto.phoneNumber);
-    }
-
-    @Post('verify-otp')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Verify OTP and get JWT token' })
-    @ApiResponse({ status: 200, description: 'OTP verified, JWT returned' })
-    @ApiResponse({ status: 401, description: 'Invalid or expired OTP' })
-    verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
-        return this.authService.verifyOtp(verifyOtpDto);
     }
 
     @Get('profile')

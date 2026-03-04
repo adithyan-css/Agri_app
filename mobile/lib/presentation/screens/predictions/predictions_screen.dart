@@ -50,7 +50,37 @@ class PredictionsScreen extends ConsumerWidget {
             ),
           ),
           Expanded(
-            child: cropsAsync.when(
+            child: Column(
+              children: [
+                // Market selection warning
+                if (selectedMarket == null)
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF8E1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Please select a market first for accurate predictions.',
+                            style: TextStyle(fontSize: 13, color: Colors.orange.shade800),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => context.push('/markets'),
+                          child: const Text('Select', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
+                Expanded(
+                  child: cropsAsync.when(
               data: (crops) {
                 if (crops.isEmpty) {
                   return const Center(
@@ -187,7 +217,9 @@ class PredictionsScreen extends ConsumerWidget {
               ),
             ),
           ),
-        ],
+              ],
+            ),
+          ),
       ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 3),
     );

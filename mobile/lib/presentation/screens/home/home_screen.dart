@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/crop_provider.dart';
+import '../../providers/location_provider.dart';
 import '../../providers/market_provider.dart';
 import '../../providers/prediction_provider.dart';
 import '../../providers/language_provider.dart';
@@ -20,6 +21,15 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Kick off GPS location fetch on first load
+    Future.microtask(() {
+      ref.read(locationProvider.notifier).getCurrentLocation();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final cropsAsync = ref.watch(cropListProvider);
@@ -39,12 +49,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _buildSearchBar(),
             const SizedBox(height: 12),
 
-            // AI Recommendation — will be wired to live data once a default crop is selected
-            const AiRecommendationBanner(
-              recommendation: 'SELL or WAIT',
-              detail:
-                  'Select a crop to see AI-powered buy/sell recommendations.',
-            ),
+            // AI Recommendation — live data from sellOrWaitProvider
+            _buildAiRecommendation(cropsAsync),
 
             // Today's Crop Prices
             SectionHeader(
@@ -202,6 +208,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildAiRecommendation(AsyncValue<dynamic> cropsAsync) {
+    return cropsAsync.when(
+      data: (crops) {
+        if (crops.isEmpty) {
+          return const AiRecommendationBanner(
+            recommendation: 'NO DATA',
+            detail: 'No crops available yet.',
+          );
+        }
+        final firstCrop = crops.first;
+        final market = ref.watch(selectedMarketProvider);
+        final marketId = market?.id ?? 'default';
+        final recAsync = ref.watch(
+          sellOrWaitProvider((cropId: firstCrop.id, marketId: marketId)),
+        );
+        return recAsync.when(
+          data: (rec) {
+            if (rec == null) {
+              return const AiRecommendationBanner(
+                recommendation: 'SELL or WAIT',
+                detail: 'Select a crop to see AI-powered buy/sell recommendations.',
+              );
+            }
+            final actionColor = rec.action == 'SELL'
+                ? const Color(0xFFE8F5E9)
+                : const Color(0xFFFFF8E1);
+            return AiRecommendationBanner(
+              recommendation: rec.action,
+              detail: rec.reason,
+              color: actionColor,
+            );
+          },
+          loading: () => const AiRecommendationBanner(
+            recommendation: 'Analyzing...',
+            detail: 'AI is analyzing prices for you.',
+          ),
+          error: (_, __) => const AiRecommendationBanner(
+            recommendation: 'SELL or WAIT',
+            detail: 'Select a crop to see AI-powered buy/sell recommendations.',
+          ),
+        );
+      },
+      loading: () => const AiRecommendationBanner(
+        recommendation: 'Loading...',
+        detail: 'Fetching crop data...',
+      ),
+      error: (_, __) => const AiRecommendationBanner(
+        recommendation: 'SELL or WAIT',
+        detail: 'Could not load crop data.',
+      ),
+    );
+  }
+
   Widget _buildPricesRow(AsyncValue<dynamic> cropsAsync) {
     return cropsAsync.when(
       data: (crops) {
@@ -219,7 +278,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: displayCrops.map<Widget>((crop) {
               return Expanded(
                 child: GestureDetector(
-                  onTap: () => context.go('/crop-detail/${crop.id}'),
+                  onTap: () => context.go('/crop-detail/${crop.id}?name=${Uri.encodeComponent(crop.nameEn)}'),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     padding: const EdgeInsets.all(12),
