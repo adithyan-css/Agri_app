@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 //import { RedisModule } from 'nestjs-redis';
 import { databaseConfig } from './config/database.config';
 import { UsersModule } from './modules/users/users.module';
@@ -12,6 +13,7 @@ import { RecommendationsModule } from './modules/recommendations/recommendations
 import { WeatherModule } from './modules/weather/weather.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
+import { TransportModule } from './modules/transport/transport.module';
 
 @Module({
     imports: [
@@ -19,6 +21,7 @@ import { AlertsModule } from './modules/alerts/alerts.module';
             isGlobal: true,
             envFilePath: '.env',
         }),
+        ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => databaseConfig(configService),
@@ -39,7 +42,8 @@ import { AlertsModule } from './modules/alerts/alerts.module';
         PredictionsModule,
         RecommendationsModule,
         WeatherModule,
-        AlertsModule
+        AlertsModule,
+        TransportModule
     ],
     controllers: [],
     providers: [],

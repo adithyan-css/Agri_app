@@ -7,6 +7,10 @@ export class CreateAlertDto {
     @IsUUID()
     cropId: string;
 
+    @ApiProperty({ example: 'm1111111-1111-1111-1111-111111111111' })
+    @IsUUID()
+    marketId: string;
+
     @ApiProperty({ example: 45.50 })
     @IsNumber()
     targetPrice: number;

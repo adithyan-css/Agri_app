@@ -5,6 +5,7 @@ import { DataIngestionService } from './data-ingestion.service';
 import { Crop } from '../crops/entities/crop.entity';
 import { Market } from '../markets/entities/market.entity';
 import { CropPrice } from '../crops/entities/crop-price.entity';
+import { Truck } from '../transport/entities/transport.entity';
 
 @Injectable()
 export class SeedService implements OnApplicationBootstrap {
@@ -17,6 +18,8 @@ export class SeedService implements OnApplicationBootstrap {
         private marketRepository: Repository<Market>,
         @InjectRepository(CropPrice)
         private priceRepository: Repository<CropPrice>,
+        @InjectRepository(Truck)
+        private truckRepository: Repository<Truck>,
         private ingestionService: DataIngestionService,
     ) { }
 
@@ -26,6 +29,7 @@ export class SeedService implements OnApplicationBootstrap {
             await this.seedCrops();
             await this.seedMarkets();
             await this.seedPrices();
+            await this.seedTrucks();
             this.logger.log('Database Basic Seeding Successfully! 🌱');
         }
 
@@ -107,5 +111,14 @@ export class SeedService implements OnApplicationBootstrap {
             }
             await this.priceRepository.save(prices);
         }
+    }
+
+    private async seedTrucks() {
+        const trucks = [
+            { licensePlate: 'TN-38-AX-1234', driverName: 'Suresh Kumar', driverPhone: '9876543210', capacityKg: 5000, perKmRate: 15.0, isAvailable: true },
+            { licensePlate: 'TN-33-BY-5678', driverName: 'Palani Swamy', driverPhone: '9876543211', capacityKg: 3000, perKmRate: 12.0, isAvailable: true },
+            { licensePlate: 'TN-45-CZ-9012', driverName: 'Ramesh Babu', driverPhone: '9876543212', capacityKg: 10000, perKmRate: 25.0, isAvailable: true },
+        ];
+        await this.truckRepository.save(trucks);
     }
 }

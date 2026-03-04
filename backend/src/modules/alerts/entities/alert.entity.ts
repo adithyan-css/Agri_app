@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Crop } from '../../crops/entities/crop.entity';
+import { Market } from '../../markets/entities/market.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum AlertCondition {
@@ -21,6 +22,10 @@ export class Alert {
     @ApiProperty({ example: 'c1111111-1111-1111-1111-111111111111' })
     @Column({ name: 'crop_id' })
     cropId: string;
+
+    @ApiProperty({ example: 'm1111111-1111-1111-1111-111111111111' })
+    @Column({ name: 'market_id' })
+    marketId: string;
 
     @ApiProperty({ example: 50.00 })
     @Column({ name: 'target_price', type: 'decimal', precision: 10, scale: 2 })
@@ -44,4 +49,8 @@ export class Alert {
     @ManyToOne(() => Crop)
     @JoinColumn({ name: 'crop_id' })
     crop: Crop;
+
+    @ManyToOne(() => Market)
+    @JoinColumn({ name: 'market_id' })
+    market: Market;
 }
