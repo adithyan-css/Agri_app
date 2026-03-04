@@ -13,38 +13,12 @@ export class AuthService {
         private readonly redisService: RedisService,
     ) { }
 
-    async requestOtp(loginDto: LoginDto) {
-        // In a real application, send OTP via SMS (e.g., Twilio / MSG91)
-        const otp = '123456'; // Mock OTP for development
-
-        // Store in Redis with 5 minutes expiry
-        const redisClient = this.redisService.getClient();
-        await redisClient.set(`otp:${loginDto.phoneNumber}`, otp, 'EX', 300);
-
-        return { message: 'OTP sent successfully', mockOtp: otp };
-    }
-
-    async verifyOtp(verifyOtpDto: VerifyOtpDto) {
-        const redisClient = this.redisService.getClient();
-        const storedOtp = await redisClient.get(`otp:${verifyOtpDto.phoneNumber}`);
-
-        // UNIVERSAL BYPASS FOR DEVELOPMENT
-        const isBypass = verifyOtpDto.otp === '123456';
-
-        if (!isBypass && storedOtp !== verifyOtpDto.otp) {
-            throw new UnauthorizedException('Invalid or expired OTP');
-        }
-
-        // Clear OTP after successful use
-        if (!isBypass) {
-            await redisClient.del(`otp:${verifyOtpDto.phoneNumber}`);
-        }
-
-        let user = await this.usersService.findByPhoneNumber(verifyOtpDto.phoneNumber);
+    async loginDirect(loginDto: LoginDto) {
+        let user = await this.usersService.findByPhoneNumber(loginDto.phoneNumber);
 
         if (!user) {
             // Auto-register via phone
-            user = await this.usersService.create({ phoneNumber: verifyOtpDto.phoneNumber });
+            user = await this.usersService.create({ phoneNumber: loginDto.phoneNumber });
         }
 
         const loginResponse = this.login(user);
