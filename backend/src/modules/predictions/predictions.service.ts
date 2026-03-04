@@ -107,4 +107,96 @@ export class PredictionsService {
             throw new Error('Prediction Engine is currently unavailable');
         }
     }
+
+    /**
+     * AI Sell or Wait Recommendation Engine
+     * ──────────────────────────────────────
+     * Compares the current market price with predicted future prices
+     * and returns a clear recommendation: SELL now or WAIT for better prices.
+     *
+     * Logic:
+     *   - If any predicted_price > current_price → WAIT (prices going up)
+     *   - Else → SELL (prices stable or dropping, sell now)
+     *
+     * Returns: trend, recommendation, expected_profit, confidence
+     */
+    async getSellOrWaitRecommendation(cropId: string, marketId: string): Promise<any> {
+        // Step 1: Get the current (latest) price for this crop at this market
+        const latestPrice = await this.cropsService.getLatestPrice(cropId, marketId);
+        const currentPrice = Number(latestPrice.pricePerKg);
+
+        // Step 2: Get the AI forecast (uses cache or calls ML service)
+        const forecast = await this.getAiForecast(cropId, marketId);
+        const predictions: Prediction[] = forecast.data;
+
+        if (!predictions || predictions.length === 0) {
+            return {
+                recommendation: 'SELL',
+                trend: 'UNKNOWN',
+                currentPrice,
+                predictedPrice: currentPrice,
+                expectedProfit: 0,
+                confidence: 0,
+                reason: 'No prediction data available. Selling now is the safer option.',
+                predictions: [],
+            };
+        }
+
+        // Step 3: Find the highest predicted price in the forecast window
+        const predictedPrices = predictions.map(p => Number(p.predictedPrice));
+        const maxPredictedPrice = Math.max(...predictedPrices);
+        const avgPredictedPrice = predictedPrices.reduce((a, b) => a + b, 0) / predictedPrices.length;
+
+        // Step 4: Calculate trend direction
+        const firstPredicted = predictedPrices[0];
+        const lastPredicted = predictedPrices[predictedPrices.length - 1];
+        let trend: string;
+        if (lastPredicted > firstPredicted * 1.02) {
+            trend = 'UP';       // Prices rising by more than 2%
+        } else if (lastPredicted < firstPredicted * 0.98) {
+            trend = 'DOWN';     // Prices falling by more than 2%
+        } else {
+            trend = 'STABLE';   // Prices staying within ±2%
+        }
+
+        // Step 5: Apply the sell-or-wait decision rule
+        //   WAIT if the max predicted price is higher than today's price (potential gain)
+        //   SELL if prices are expected to stay flat or drop
+        const recommendation = maxPredictedPrice > currentPrice ? 'WAIT' : 'SELL';
+
+        // Step 6: Calculate expected profit/loss per kg
+        const expectedProfit = Number((maxPredictedPrice - currentPrice).toFixed(2));
+
+        // Step 7: Compute confidence from average prediction confidence scores
+        const confidenceScores = predictions.map(p => Number(p.confidenceScore || 0));
+        const avgConfidence = confidenceScores.reduce((a, b) => a + b, 0) / confidenceScores.length;
+        const confidence = Number(avgConfidence.toFixed(4));
+
+        // Step 8: Generate a human-friendly reason
+        let reason: string;
+        if (recommendation === 'WAIT') {
+            reason = `Prices are expected to rise to ₹${maxPredictedPrice.toFixed(2)}/kg. `
+                + `Waiting could yield an extra ₹${expectedProfit.toFixed(2)}/kg profit.`;
+        } else {
+            reason = `Prices are expected to stay flat or decline. `
+                + `Selling now at ₹${currentPrice.toFixed(2)}/kg is the optimal choice.`;
+        }
+
+        return {
+            recommendation,         // 'SELL' or 'WAIT'
+            trend,                  // 'UP', 'DOWN', or 'STABLE'
+            currentPrice,           // Today's market price per kg
+            predictedPrice: Number(maxPredictedPrice.toFixed(2)),  // Best predicted price
+            avgPredictedPrice: Number(avgPredictedPrice.toFixed(2)),
+            expectedProfit,         // Expected gain per kg if waiting
+            confidence,             // Model confidence (0-1)
+            reason,                 // Human-readable explanation
+            predictions: predictions.map(p => ({
+                date: p.targetDate,
+                price: Number(p.predictedPrice),
+                lowerBound: Number(p.lowerBound),
+                upperBound: Number(p.upperBound),
+            })),
+        };
+    }
 }
