@@ -1,0 +1,151 @@
+{
+  "@@locale": "en",
+  "appTitle": "AgriPrice AI",
+  "login": "Login",
+  "register": "Register",
+  "logout": "Logout",
+  "phoneNumber": "Phone Number",
+  "password": "Password",
+  "name": "Name",
+  "enterPhoneNumber": "Enter phone number",
+  "enterPassword": "Enter password",
+  "enterName": "Enter your name",
+  "dontHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  "signUp": "Sign Up",
+  "signIn": "Sign In",
+  "otpVerification": "OTP Verification",
+  "enterOtp": "Enter the OTP sent to {phone}",
+  "@enterOtp": {
+    "placeholders": {
+      "phone": { "type": "String" }
+    }
+  },
+  "verify": "Verify",
+  "resendOtp": "Resend OTP",
+
+  "home": "Home",
+  "dashboard": "Dashboard",
+  "crops": "Crops",
+  "markets": "Markets",
+  "predictions": "Predictions",
+  "alerts": "Alerts",
+  "profile": "Profile",
+  "settings": "Settings",
+
+  "todayPrices": "Today's Prices",
+  "priceTrend": "Price Trend",
+  "pricePerKg": "₹{price}/kg",
+  "@pricePerKg": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  },
+  "viewAll": "View All",
+  "seeMore": "See More",
+
+  "cropDetails": "Crop Details",
+  "latestPrice": "Latest Price",
+  "priceHistory": "Price History",
+  "last30Days": "Last 30 Days",
+  "last90Days": "Last 90 Days",
+
+  "nearbyMarkets": "Nearby Markets",
+  "allMarkets": "All Markets",
+  "marketDetails": "Market Details",
+  "distance": "Distance",
+  "kmAway": "{km} km away",
+  "@kmAway": {
+    "placeholders": {
+      "km": { "type": "String" }
+    }
+  },
+  "searchMarkets": "Search markets...",
+
+  "pricePrediction": "Price Prediction",
+  "forecast": "Forecast",
+  "days": "{count} days",
+  "@days": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "confidence": "Confidence",
+  "trend": "Trend",
+  "trendUp": "Upward",
+  "trendDown": "Downward",
+  "trendStable": "Stable",
+  "recommendation": "Recommendation",
+  "sell": "Sell",
+  "wait": "Wait",
+  "hold": "Hold",
+  "modelComparison": "Model Comparison",
+  "selectModel": "Select Model",
+  "movingAverage": "Moving Average",
+  "linearRegression": "Linear Regression",
+  "chronos": "Chronos",
+  "prophet": "Prophet",
+
+  "profitCalculator": "Profit Calculator",
+  "transportCost": "Transport Cost",
+  "quantity": "Quantity (kg)",
+  "localPrice": "Local Price (₹/kg)",
+  "remotePrice": "Remote Price (₹/kg)",
+  "distanceKm": "Distance (km)",
+  "calculate": "Calculate",
+  "netProfit": "Net Profit",
+  "worthTransporting": "Worth Transporting!",
+  "notWorthTransporting": "Not Worth Transporting",
+
+  "createAlert": "Create Alert",
+  "editAlert": "Edit Alert",
+  "alertCondition": "Alert Condition",
+  "priceAbove": "Price Above",
+  "priceBelow": "Price Below",
+  "targetPrice": "Target Price",
+  "noAlerts": "No alerts yet",
+  "noAlertsDescription": "Create price alerts to get notified when prices reach your target.",
+  "alertCreated": "Alert created successfully",
+  "alertDeleted": "Alert deleted",
+
+  "language": "Language",
+  "english": "English",
+  "tamil": "Tamil",
+  "notifications": "Notifications",
+  "priceAlerts": "Price Alerts",
+  "clearCache": "Clear Cache",
+  "about": "About",
+  "version": "Version {version}",
+  "@version": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "termsOfService": "Terms of Service",
+  "privacyPolicy": "Privacy Policy",
+
+  "loading": "Loading...",
+  "error": "Something went wrong",
+  "retry": "Retry",
+  "noData": "No data available",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "confirm": "Confirm",
+  "search": "Search",
+  "refresh": "Refresh",
+
+  "onboardingTitle1": "Track Crop Prices",
+  "onboardingDesc1": "Get real-time prices from markets across Tamil Nadu",
+  "onboardingTitle2": "AI Predictions",
+  "onboardingDesc2": "Advanced ML models predict future prices to help you decide when to sell",
+  "onboardingTitle3": "Smart Alerts",
+  "onboardingDesc3": "Set price alerts and get notified when the best time to sell arrives",
+  "getStarted": "Get Started",
+  "skip": "Skip",
+  "next": "Next",
+
+  "voiceSearch": "Voice Search",
+  "listening": "Listening...",
+  "speakNow": "Speak now..."
+}
