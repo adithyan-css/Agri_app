@@ -3,14 +3,12 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { LoginDto, VerifyOtpDto } from './dto/login.dto';
 import { User } from '../users/entities/user.entity';
-import { RedisService } from 'nestjs-redis';
 
 @Injectable()
 export class AuthService {
     constructor(
         private usersService: UsersService,
         private jwtService: JwtService,
-        private readonly redisService: RedisService,
     ) { }
 
     async loginDirect(loginDto: LoginDto) {

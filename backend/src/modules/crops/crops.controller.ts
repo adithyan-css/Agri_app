@@ -1,7 +1,7 @@
-import { Controller, Get, Param, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { CropsService } from './crops.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Crops')
 @ApiBearerAuth()

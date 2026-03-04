@@ -10,6 +10,8 @@ import { MarketsModule } from './modules/markets/markets.module';
 import { PredictionsModule } from './modules/predictions/predictions.module';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module';
 import { WeatherModule } from './modules/weather/weather.module';
+import { SeedModule } from './modules/seed/seed.module';
+import { AlertsModule } from './modules/alerts/alerts.module';
 
 @Module({
     imports: [
@@ -29,13 +31,15 @@ import { WeatherModule } from './modules/weather/weather.module';
         //}),
         //inject: [ConfigService],
         //}),
+        SeedModule,
         UsersModule,
         AuthModule,
         CropsModule,
         MarketsModule,
         PredictionsModule,
         RecommendationsModule,
-        WeatherModule
+        WeatherModule,
+        AlertsModule
     ],
     controllers: [],
     providers: [],

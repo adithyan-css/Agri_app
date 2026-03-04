@@ -22,6 +22,28 @@ class PredictionService:
         """
         historical_prices = [item.price for item in request.historical_data]
         historical_dates = [item.date for item in request.historical_data]
+
+        if not historical_prices or not historical_dates:
+            self.logger.warning("No historical data provided; returning fallback prediction.")
+            today = datetime.datetime.utcnow()
+            fallback_price = 30.0
+            predictions = [
+                PricePoint(
+                    date=(today + datetime.timedelta(days=i+1)).strftime("%Y-%m-%d"),
+                    predicted_price=fallback_price,
+                    lower_bound=fallback_price * 0.9,
+                    upper_bound=fallback_price * 1.1
+                )
+                for i in range(7)
+            ]
+            return PredictionResponse(
+                crop_id=request.crop_id,
+                market_id=request.market_id,
+                predictions=predictions,
+                confidence_score=0.1,
+                trend_direction="STABLE",
+                recommendation="SELL"
+            )
         
         steps = 7
         

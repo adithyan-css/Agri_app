@@ -1,8 +1,8 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { RecommendationsService } from './recommendations.service';
 import { TransportProfitDto } from './dto/transport-profit.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Recommendations & Intelligence')
 @ApiBearerAuth()

@@ -46,22 +46,22 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - DATABASE_HOST=db
-      - DATABASE_PORT=5432
-      - DATABASE_USER=user
-      - DATABASE_PASSWORD=password
-      - DATABASE_NAME=agriprice
-      - REDIS_URL=redis://redis:6379
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=user
+      - DB_PASSWORD=password
+      - DB_DATABASE=agriprice
       - ML_SERVICE_URL=http://ml-service:8000
-      - JWT_SECRET=super_secret_jwt_key
-      - OPENWEATHER_API_KEY=mock_key
+      - JWT_SECRET=${JWT_SECRET:-agriprice_secret_2026_!@#}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - DB_SYNC=true
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_started
       ml-service:
         condition: service_started
+    volumes:
+      - C:\Users\adith\Downloads\archive:/usr/src/app/dataset:ro
 
 volumes:
   pgdata:
