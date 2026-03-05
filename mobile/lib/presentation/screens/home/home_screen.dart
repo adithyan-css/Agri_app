@@ -13,6 +13,8 @@ import '../../widgets/common/bottom_nav_bar.dart';
 import '../../widgets/common/section_header.dart';
 import '../../widgets/common/market_card.dart' as widgets;
 import '../../providers/weather_provider.dart';
+import '../alerts/alerts_screen.dart' show alertsProvider;
+import '../../../data/models/alert_model.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +24,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +56,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             // AI Recommendation — live data from sellOrWaitProvider
             _buildAiRecommendation(cropsAsync),
+
+            // Active Price Alerts preview
+            _buildAlertsPreview(context, ref),
 
             // Today's Crop Prices
             SectionHeader(
@@ -139,7 +146,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               color: Colors.white70, fontSize: 13)),
                       const SizedBox(width: 6),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          ref.read(locationProvider.notifier).getCurrentLocation();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Refreshing location...')),
+                          );
+                        },
                         child: const Text('[Change]',
                             style: TextStyle(
                                 color: Colors.white,
@@ -187,18 +199,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Stats row — market count comes from API, others show as dynamic
-          Row(
-            children: [
-              const _StatChip(label: "Today's Avg", value: '--', sublabel: 'Select crop'),
-              const SizedBox(width: 8),
-              const _StatChip(label: 'Markets', value: '--', sublabel: 'Nearby'),
-              const SizedBox(width: 8),
-              const _StatChip(label: 'AI Models', value: '4', sublabel: 'Ensemble'),
-            ],
-          ),
+          // Stats row — dynamic from providers
+          _buildStatsRow(),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatsRow() {
+    final marketsAsync = ref.watch(marketListProvider);
+    final cropsAsync = ref.watch(cropListProvider);
+    final marketCount = marketsAsync.valueOrNull?.length ?? 0;
+    final cropCount = cropsAsync.valueOrNull?.length ?? 0;
+    return Row(
+      children: [
+        _StatChip(label: 'Crops', value: '$cropCount', sublabel: 'Available'),
+        const SizedBox(width: 8),
+        _StatChip(label: 'Markets', value: '$marketCount', sublabel: 'Tamil Nadu'),
+        const SizedBox(width: 8),
+        const _StatChip(label: 'AI Models', value: '4', sublabel: 'Ensemble'),
+      ],
     );
   }
 
@@ -206,11 +226,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: TextField(
+        onChanged: (value) => setState(() => _searchQuery = value.toLowerCase()),
         decoration: InputDecoration(
           hintText: 'Search crops, markets, prices...',
           hintStyle: const TextStyle(color: AppColors.textSecondary),
           prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
-          suffixIcon: const Icon(Icons.mic, color: AppColors.primary),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
@@ -234,7 +254,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
         final firstCrop = crops.first;
         final market = ref.watch(selectedMarketProvider);
-        final marketId = market?.id ?? 'default';
+        final marketsAsync = ref.watch(marketListProvider);
+        final firstMarket = marketsAsync.valueOrNull?.isNotEmpty == true
+            ? marketsAsync.valueOrNull!.first
+            : null;
+        final marketId = market?.id ?? firstMarket?.id ?? 'default';
         final recAsync = ref.watch(
           sellOrWaitProvider((cropId: firstCrop.id, marketId: marketId)),
         );
@@ -276,17 +300,119 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildAlertsPreview(BuildContext context, WidgetRef ref) {
+    final alertsAsync = ref.watch(alertsProvider);
+    return alertsAsync.when(
+      data: (alerts) {
+        final active = alerts.where((a) => a.isActive).toList();
+        if (active.isEmpty) return const SizedBox.shrink();
+        final display = active.take(2).toList();
+        return Column(
+          children: [
+            SectionHeader(
+              title: 'Price Alerts',
+              actionLabel: 'See all',
+              onAction: () => context.go('/alerts'),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: display.map((alert) {
+                  final icon = alert.isTriggered
+                      ? Icons.notifications_active
+                      : Icons.notifications_outlined;
+                  final iconColor = alert.isTriggered
+                      ? Colors.orange
+                      : AppColors.primary;
+                  final subtitle = alert.condition == 'above'
+                      ? 'Above ₹${alert.targetPrice.toStringAsFixed(0)}'
+                      : 'Below ₹${alert.targetPrice.toStringAsFixed(0)}';
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: alert.isTriggered
+                          ? const Color(0xFFFFF3E0)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(icon, color: iconColor, size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                alert.cropName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                '${alert.marketName} · $subtitle',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (alert.isTriggered)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.orange,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Triggered',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 10),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
   Widget _buildPricesRow(AsyncValue<dynamic> cropsAsync) {
     return cropsAsync.when(
       data: (crops) {
-        if (crops.isEmpty) {
+        var filtered = crops as List;
+        if (_searchQuery.isNotEmpty) {
+          filtered = filtered.where((c) =>
+            c.nameEn.toLowerCase().contains(_searchQuery) ||
+            c.nameTa.contains(_searchQuery)).toList();
+        }
+        if (filtered.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(16),
             child: Center(child: Text('No crop data available')),
           );
         }
         // Show up to 3 crops in compact row
-        final displayCrops = crops.take(3).toList();
+        final displayCrops = filtered.take(3).toList();
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -390,14 +516,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildMarketsList(AsyncValue<dynamic> marketsAsync, Locale lang) {
     return marketsAsync.when(
       data: (markets) {
-        if (markets.isEmpty) {
+        var filtered = markets as List;
+        if (_searchQuery.isNotEmpty) {
+          filtered = filtered.where((m) =>
+            m.nameEn.toLowerCase().contains(_searchQuery) ||
+            m.district.toLowerCase().contains(_searchQuery)).toList();
+        }
+        if (filtered.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(16),
             child: Center(child: Text('No markets found')),
           );
         }
         return Column(
-          children: markets.take(3).map<Widget>((market) {
+          children: filtered.take(3).map<Widget>((market) {
             return widgets.MarketCard(
               name: market.nameEn,
               location: market.district,

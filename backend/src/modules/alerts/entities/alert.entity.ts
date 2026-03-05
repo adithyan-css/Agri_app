@@ -24,7 +24,7 @@ export class Alert {
     cropId: string;
 
     @ApiProperty({ example: 'm1111111-1111-1111-1111-111111111111' })
-    @Column({ name: 'market_id' })
+    @Column({ name: 'market_id', nullable: true })
     marketId: string;
 
     @ApiProperty({ example: 50.00 })

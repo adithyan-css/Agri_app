@@ -4,11 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/colors.dart';
 import '../../../config/theme.dart';
 import '../../providers/crop_provider.dart';
-import '../../providers/market_provider.dart';
-import '../../providers/prediction_provider.dart';
 import '../../widgets/common/green_gradient_header.dart';
 import '../../widgets/common/price_card.dart' as widgets;
-import '../../widgets/common/ai_recommendation_banner.dart';
 import '../../widgets/common/section_header.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
 
@@ -39,10 +36,26 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
     }
   }
 
+  IconData _getCropIcon(String crop) {
+    switch (crop.toLowerCase()) {
+      case 'tomato':
+        return Icons.circle;
+      case 'onion':
+        return Icons.circle;
+      case 'potato':
+        return Icons.circle;
+      case 'rice':
+        return Icons.grass;
+      case 'wheat':
+        return Icons.grass;
+      default:
+        return Icons.eco;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cropsAsync = ref.watch(cropListProvider);
-    final selectedMarket = ref.watch(selectedMarketProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -83,12 +96,23 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
                               color: isSelected ? AppColors.primary : Colors.transparent,
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Text(
-                              crop.nameEn,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: isSelected ? Colors.white : AppColors.textSecondary,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getCropIcon(crop.nameEn),
+                                  size: 14,
+                                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  crop.nameEn,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -142,12 +166,6 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
                   ),
                 ),
 
-                // AI Recommendation — placeholder until crop selected
-                const AiRecommendationBanner(
-                  recommendation: 'SELECT A CROP',
-                  detail: 'Choose a crop above to see AI-powered sell/wait recommendations.',
-                ),
-
                 SectionHeader(
                   title: 'Price Trend',
                   actionLabel: 'View Full Prices',
@@ -192,7 +210,10 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
                         cropNameTamil: crop.nameTa,
                         price: 0.0,
                         change: 0.0,
-                        onTap: () => setState(() => _selectedCrop = crop.nameEn),
+                        onTap: () {
+                          setState(() => _selectedCrop = crop.nameEn);
+                          context.push('/crop-detail/${crop.id}?name=${Uri.encodeComponent(crop.nameEn)}');
+                        },
                       );
                     }).toList(),
                   ),

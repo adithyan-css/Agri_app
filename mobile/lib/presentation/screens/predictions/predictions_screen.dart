@@ -114,9 +114,15 @@ class PredictionsScreen extends ConsumerWidget {
                       ),
                       child: InkWell(
                         onTap: () {
-                          final marketId = selectedMarket?.id ?? 'default';
+                          if (selectedMarket == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please select a market first')),
+                            );
+                            context.push('/markets');
+                            return;
+                          }
                           context.push(
-                            '/predictions/${crop.id}/$marketId?name=${crop.nameEn}',
+                            '/predictions/${crop.id}/${selectedMarket.id}?name=${crop.nameEn}',
                           );
                         },
                         borderRadius: BorderRadius.circular(16),

@@ -130,8 +130,13 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
               error: (_, __) => 'Error loading markets',
             ),
             trailing: IconButton(
-              icon: const Icon(Icons.map_outlined, color: Colors.white),
-              onPressed: () {},
+              icon: const Icon(Icons.sort, color: Colors.white),
+              onPressed: () {
+                setState(() {
+                  final idx = _filters.indexOf(_activeFilter);
+                  _activeFilter = _filters[(idx + 1) % _filters.length];
+                });
+              },
             ),
           ),
 

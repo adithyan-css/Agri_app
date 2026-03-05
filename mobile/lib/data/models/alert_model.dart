@@ -27,7 +27,7 @@ class AlertModel {
 
   factory AlertModel.fromJson(Map<String, dynamic> json) {
     return AlertModel(
-      id: json['id'],
+      id: json['id'] ?? '',
       cropId: json['cropId'] ?? '',
       cropName: json['cropName'] ?? 'Unknown Crop',
       marketId: json['marketId'] ?? '',

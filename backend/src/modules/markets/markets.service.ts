@@ -28,6 +28,8 @@ export class MarketsService {
                 m.district,
                 m.state,
                 m.is_active AS "isActive",
+                m.phone,
+                m.open_hours AS "openHours",
                 m.created_at AS "createdAt",
                 ST_Y(m.location::geometry) AS "lat",
                 ST_X(m.location::geometry) AS "lng",

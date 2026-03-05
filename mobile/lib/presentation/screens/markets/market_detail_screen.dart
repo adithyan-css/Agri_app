@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/colors.dart';
 import '../../../config/theme.dart';
 import '../../providers/market_provider.dart';
@@ -173,7 +174,16 @@ class MarketDetailScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            final phone = selectedMarket?.phone;
+                            if (phone != null && phone != 'Not available') {
+                              launchUrl(Uri.parse('tel:$phone'));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Phone number not available for this market')),
+                              );
+                            }
+                          },
                           icon: const Icon(Icons.call),
                           label: const Text('Call'),
                           style: OutlinedButton.styleFrom(
@@ -188,7 +198,20 @@ class MarketDetailScreen extends ConsumerWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            final lat = selectedMarket?.lat;
+                            final lng = selectedMarket?.lng;
+                            if (lat != null && lng != null) {
+                              final url = Uri.parse(
+                                'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+                              );
+                              launchUrl(url, mode: LaunchMode.externalApplication);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Location not available for this market')),
+                              );
+                            }
+                          },
                           icon: const Icon(Icons.map),
                           label: const Text('Get Directions'),
                           style: OutlinedButton.styleFrom(

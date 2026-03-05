@@ -23,10 +23,12 @@ class PredictionModel {
 
   factory PredictionModel.fromJson(Map<String, dynamic> json) {
     return PredictionModel(
-      id: json['id'],
-      cropId: json['cropId'],
-      marketId: json['marketId'],
-      targetDate: DateTime.parse(json['targetDate']),
+      id: json['id'] ?? '',
+      cropId: json['cropId'] ?? '',
+      marketId: json['marketId'] ?? '',
+      targetDate: json['targetDate'] != null
+          ? DateTime.parse(json['targetDate'])
+          : DateTime.now(),
       predictedPrice: (json['predictedPrice'] is String) 
           ? double.parse(json['predictedPrice']) 
           : (json['predictedPrice'] as num).toDouble(),

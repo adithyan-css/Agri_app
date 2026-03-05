@@ -27,6 +27,11 @@ export class PriceMonitorService {
 
         for (const alert of activeAlerts) {
             try {
+                // Skip alerts with no market specified
+                if (!alert.marketId) {
+                    this.logger.debug(`Alert ${alert.id} has no market_id, skipping`);
+                    continue;
+                }
                 // Fetch latest price for the crop at the specific market
                 const latest = await this.cropsService.getLatestPrice(alert.cropId, alert.marketId);
                 const currentPrice = Number(latest.pricePerKg);

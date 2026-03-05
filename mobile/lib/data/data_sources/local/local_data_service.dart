@@ -14,6 +14,18 @@ class LocalDataService {
 
   // ── Cache write ──────────────────────────────────────────────
 
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((k) =>
+        k == _cropsCacheKey ||
+        k == _marketsCacheKey ||
+        k.startsWith(_pricesCacheKeyPrefix) ||
+        k.startsWith(_historyCacheKeyPrefix));
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
+  }
+
   static Future<void> cacheCrops(List<dynamic> rawJson) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_cropsCacheKey, jsonEncode(rawJson));

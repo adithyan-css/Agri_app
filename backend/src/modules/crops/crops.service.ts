@@ -17,12 +17,14 @@ export class CropsService {
         return this.cropRepository.find();
     }
 
-    async getHistoricalPrices(cropId: string, marketId: string, days: number = 7): Promise<CropPrice[]> {
+    async getHistoricalPrices(cropId: string, marketId: string, days: number = 7) {
         // Find the most recent record for this crop/market to anchor our window
         const mostRecent = await this.cropPriceRepository.findOne({
             where: { cropId, marketId },
             order: { recordDate: 'DESC' }
         });
+
+        let records: CropPrice[];
 
         if (!mostRecent) {
             // If no market-specific data, find any recent record for this crop
@@ -36,35 +38,38 @@ export class CropsService {
             const endDate = new Date(anyCrop.recordDate);
             const startDate = new Date(anyCrop.recordDate);
             startDate.setDate(startDate.getDate() - days);
-            return this.cropPriceRepository.find({
+            records = await this.cropPriceRepository.find({
                 where: { cropId, recordDate: Between(startDate, endDate) },
                 order: { recordDate: 'ASC' },
                 take: days
             });
+        } else {
+            const endDate = new Date(mostRecent.recordDate);
+            const startDate = new Date(mostRecent.recordDate);
+            startDate.setDate(startDate.getDate() - days);
+
+            records = await this.cropPriceRepository.find({
+                where: {
+                    cropId,
+                    marketId,
+                    recordDate: Between(startDate, endDate)
+                },
+                order: { recordDate: 'ASC' }
+            });
         }
 
-        const endDate = new Date(mostRecent.recordDate);
-        const startDate = new Date(mostRecent.recordDate);
-        startDate.setDate(startDate.getDate() - days);
-
-        return this.cropPriceRepository.find({
-            where: {
-                cropId,
-                marketId,
-                recordDate: Between(startDate, endDate)
-            },
-            order: { recordDate: 'ASC' }
-        });
+        // Add Flutter-compatible aliases
+        return records.map(r => ({ ...r, price: r.pricePerKg, date: r.recordDate }));
     }
 
-    async getLatestPrice(cropId: string, marketId: string): Promise<CropPrice> {
-        const price = await this.cropPriceRepository.findOne({
+    async getLatestPrice(cropId: string, marketId: string) {
+        const record = await this.cropPriceRepository.findOne({
             where: { cropId, marketId },
             order: { recordDate: 'DESC' }
         });
 
-        if (!price) throw new NotFoundException('Price not found for this crop and market.');
+        if (!record) throw new NotFoundException('Price not found for this crop and market.');
 
-        return price;
+        return { ...record, price: record.pricePerKg };
     }
 }

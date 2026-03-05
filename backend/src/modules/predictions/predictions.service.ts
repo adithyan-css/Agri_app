@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -24,6 +24,12 @@ export class PredictionsService {
     ) { }
 
     async getAiForecast(cropId: string, marketId: string): Promise<any> {
+        // Resolve 'default' to the first market in the DB
+        if (!marketId || marketId === 'default') {
+            const fallback = await this.marketRepository.findOne({ where: {}, order: { nameEn: 'ASC' } });
+            if (fallback) marketId = fallback.id;
+        }
+
         // ... (existing cache check)
         const existing = await this.predictionRepository.find({
             where: {
@@ -116,7 +122,7 @@ export class PredictionsService {
             };
         } catch (error) {
             this.logger.error('Failed to generate predictions via ML Service', error.message);
-            throw new Error('Prediction Engine is currently unavailable');
+            throw new ServiceUnavailableException('Prediction Engine is currently unavailable');
         }
     }
 
@@ -133,6 +139,12 @@ export class PredictionsService {
      * Returns: trend, recommendation, expected_profit, confidence
      */
     async getSellOrWaitRecommendation(cropId: string, marketId: string): Promise<any> {
+        // Resolve 'default' to the first market in the DB
+        if (!marketId || marketId === 'default') {
+            const fallback = await this.marketRepository.findOne({ where: {}, order: { nameEn: 'ASC' } });
+            if (fallback) marketId = fallback.id;
+        }
+
         // Step 1: Get the current (latest) price for this crop at this market
         const latestPrice = await this.cropsService.getLatestPrice(cropId, marketId);
         const currentPrice = Number(latestPrice.pricePerKg);

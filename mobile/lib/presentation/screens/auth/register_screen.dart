@@ -22,6 +22,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
+  static const Map<String, List<String>> _stateCities = {
+    'Tamil Nadu': ['Coimbatore', 'Chennai', 'Madurai', 'Salem', 'Tiruchirappalli', 'Erode', 'Tirunelveli', 'Vellore', 'Thanjavur', 'Dindigul'],
+    'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum', 'Davangere', 'Shimoga', 'Tumkur'],
+    'Kerala': ['Kochi', 'Thiruvananthapuram', 'Kozhikode', 'Thrissur', 'Kollam', 'Palakkad', 'Alappuzha'],
+    'Andhra Pradesh': ['Vijayawada', 'Visakhapatnam', 'Guntur', 'Tirupati', 'Nellore', 'Kurnool', 'Rajahmundry'],
+    'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam'],
+    'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad', 'Solapur', 'Kolhapur'],
+    'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar'],
+    'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Bikaner'],
+    'Madhya Pradesh': ['Bhopal', 'Indore', 'Jabalpur', 'Gwalior', 'Ujjain'],
+    'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Agra', 'Varanasi', 'Allahabad', 'Meerut'],
+    'Punjab': ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda'],
+    'Haryana': ['Gurgaon', 'Faridabad', 'Karnal', 'Hisar', 'Panipat'],
+    'West Bengal': ['Kolkata', 'Howrah', 'Durgapur', 'Siliguri', 'Asansol'],
+    'Bihar': ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur'],
+    'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Sambalpur'],
+  };
+
+  List<String> get _availableCities => _stateCities[_selectedState] ?? ['Other'];
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -176,17 +196,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       child: DropdownButton<String>(
                         value: _selectedState,
                         isExpanded: true,
-                        items: ['Tamil Nadu', 'Karnataka', 'Kerala', 'Andhra Pradesh']
+                        items: _stateCities.keys
                             .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                             .toList(),
-                        onChanged: (v) =>
-                            setState(() => _selectedState = v ?? _selectedState),
+                        onChanged: (v) {
+                          setState(() {
+                            _selectedState = v ?? _selectedState;
+                            _selectedCity = _availableCities.first;
+                          });
+                        },
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // City dropdown
+                  // City dropdown — dynamically updates based on selected state
                   const Text('City', style: AppTextStyles.heading3),
                   const SizedBox(height: 8),
                   Container(
@@ -197,9 +221,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: _selectedCity,
+                        value: _availableCities.contains(_selectedCity)
+                            ? _selectedCity
+                            : _availableCities.first,
                         isExpanded: true,
-                        items: ['Coimbatore', 'Chennai', 'Madurai', 'Salem']
+                        items: _availableCities
                             .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                             .toList(),
                         onChanged: (v) =>

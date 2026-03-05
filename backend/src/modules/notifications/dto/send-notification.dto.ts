@@ -1,9 +1,9 @@
-import { IsString, IsNotEmpty, IsUUID, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SendNotificationDto {
     @ApiProperty({ example: 'u1111111-1111-1111-1111-111111111111' })
-    @IsUUID()
+    @IsString()
     @IsNotEmpty()
     userId: string;
 

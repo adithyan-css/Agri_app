@@ -1,0 +1,51 @@
+id,name,tamil_name,category,unit,image_url,created_at
+c0000001-0001-4000-8000-000000000001,Tomato,தக்காளி,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/8/88/Bright_red_tomato_and_cross_section02.jpg,2024-01-01 00:00:00
+c0000001-0002-4000-8000-000000000002,Onion,வெங்காயம்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/2/25/Onion_on_White.JPG,2024-01-01 00:00:00
+c0000001-0003-4000-8000-000000000003,Potato,உருளைக்கிழங்கு,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/a/ab/Patates.jpg,2024-01-01 00:00:00
+c0000001-0004-4000-8000-000000000004,Paddy,நெல்,Grain,quintal,https://upload.wikimedia.org/wikipedia/commons/e/e4/Oryza_sativa_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-195.jpg,2024-01-01 00:00:00
+c0000001-0005-4000-8000-000000000005,Banana,வாழைப்பழம்,Fruit,dozen,https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg,2024-01-01 00:00:00
+c0000001-0006-4000-8000-000000000006,Carrot,கேரட்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/a/a2/Vegetable-Carrot-Bundle-wStalks.jpg,2024-01-01 00:00:00
+c0000001-0007-4000-8000-000000000007,Brinjal,கத்தரிக்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/7/76/Solanum_melongena_24_08_2012_%281%29.JPG,2024-01-01 00:00:00
+c0000001-0008-4000-8000-000000000008,Green Chilli,பச்சை மிளகாய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/e/e4/Green_Chili.jpg,2024-01-01 00:00:00
+c0000001-0009-4000-8000-000000000009,Cabbage,முட்டைகோஸ்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/2/21/Cabbage_and_cross_section_on_white.jpg,2024-01-01 00:00:00
+c0000001-0010-4000-8000-000000000010,Cauliflower,காலிஃபிளவர்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/2/2b/Cauliflower.JPG,2024-01-01 00:00:00
+c0000001-0011-4000-8000-000000000011,Groundnut,நிலக்கடலை,Grain,kg,https://upload.wikimedia.org/wikipedia/commons/6/6f/Peanuts.jpg,2024-01-01 00:00:00
+c0000001-0012-4000-8000-000000000012,Coconut,தேங்காய்,Fruit,piece,https://upload.wikimedia.org/wikipedia/commons/1/1c/Two_coconuts.jpg,2024-01-01 00:00:00
+c0000001-0013-4000-8000-000000000013,Turmeric,மஞ்சள்,Spice,kg,https://upload.wikimedia.org/wikipedia/commons/5/5b/Curcuma_longa_roots.jpg,2024-01-01 00:00:00
+c0000001-0014-4000-8000-000000000014,Sugarcane,கரும்பு,Cash Crop,quintal,https://upload.wikimedia.org/wikipedia/commons/6/6c/Sugarcane_Taiwan_2.jpg,2024-01-01 00:00:00
+c0000001-0015-4000-8000-000000000015,Mango,மாம்பழம்,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/9/90/Hapus_Mango.jpg,2024-01-01 00:00:00
+c0000001-0016-4000-8000-000000000016,Beans,பீன்ஸ்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/4/4d/Bean_Pod.jpg,2024-01-01 00:00:00
+c0000001-0017-4000-8000-000000000017,Garlic,பூண்டு,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/e/e2/Garlic_bulbs.jpg,2024-01-01 00:00:00
+c0000001-0018-4000-8000-000000000018,Ginger,இஞ்சி,Spice,kg,https://upload.wikimedia.org/wikipedia/commons/a/a2/Ginger.jpg,2024-01-01 00:00:00
+c0000001-0019-4000-8000-000000000019,Pumpkin,பூசணிக்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/5/5c/FrenchMarketPumpkinsB.jpg,2024-01-01 00:00:00
+c0000001-0020-4000-8000-000000000020,Capsicum,குடைமிளகாய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/8/85/Green-Yellow-Red-Pepper-2009.jpg,2024-01-01 00:00:00
+c0000001-0021-4000-8000-000000000021,Ladies Finger,வெண்டைக்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/9/9e/Okra_whole_and_cross_section.jpg,2024-01-01 00:00:00
+c0000001-0022-4000-8000-000000000022,Beetroot,பீட்ரூட்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/2/29/Beetroot_jm26647.jpg,2024-01-01 00:00:00
+c0000001-0023-4000-8000-000000000023,Radish,முள்ளங்கி,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/3/3c/Radishes_1.jpg,2024-01-01 00:00:00
+c0000001-0024-4000-8000-000000000024,Coriander Leaves,கொத்தமல்லி,Leafy,bundle,https://upload.wikimedia.org/wikipedia/commons/5/51/A_scene_of_Coriander_leaves.JPG,2024-01-01 00:00:00
+c0000001-0025-4000-8000-000000000025,Spinach,கீரை,Leafy,kg,https://upload.wikimedia.org/wikipedia/commons/f/f6/Spinach_bunch.jpg,2024-01-01 00:00:00
+c0000001-0026-4000-8000-000000000026,Bitter Gourd,பாகற்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/e/e0/Momordica_charantia.jpg,2024-01-01 00:00:00
+c0000001-0027-4000-8000-000000000027,Bottle Gourd,சுரைக்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/0/0b/Lagenaria_siceraria.jpg,2024-01-01 00:00:00
+c0000001-0028-4000-8000-000000000028,Ridge Gourd,பீர்க்கங்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/3/39/Luffa_aegyptiaca.jpg,2024-01-01 00:00:00
+c0000001-0029-4000-8000-000000000029,Snake Gourd,புடலங்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/b/b0/Snake_gourd.jpg,2024-01-01 00:00:00
+c0000001-0030-4000-8000-000000000030,Drumstick,முருங்கைக்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/6/62/Moringa_oleifera_pods.JPG,2024-01-01 00:00:00
+c0000001-0031-4000-8000-000000000031,Lemon,எலுமிச்சை,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/e/e4/Lemon.jpg,2024-01-01 00:00:00
+c0000001-0032-4000-8000-000000000032,Green Peas,பட்டாணி,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/1/11/Peas_in_pods_-_Studio.jpg,2024-01-01 00:00:00
+c0000001-0033-4000-8000-000000000033,Tamarind,புளி,Spice,kg,https://upload.wikimedia.org/wikipedia/commons/4/44/Tamarind_ID.jpg,2024-01-01 00:00:00
+c0000001-0034-4000-8000-000000000034,Guava,கொய்யா,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/f/f4/Guava_ID.jpg,2024-01-01 00:00:00
+c0000001-0035-4000-8000-000000000035,Papaya,பப்பாளி,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/1/1b/Papaya_cross_section_BNC.jpg,2024-01-01 00:00:00
+c0000001-0036-4000-8000-000000000036,Watermelon,தர்பூசணி,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/4/47/Taiwan_2009_Tainan_City_Organic_Farm_Watermelon_FRD_7962.jpg,2024-01-01 00:00:00
+c0000001-0037-4000-8000-000000000037,Pomegranate,மாதுளை,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/d/d4/Pomegranate_fruit_-_whole_and_piece_with_arils.jpg,2024-01-01 00:00:00
+c0000001-0038-4000-8000-000000000038,Grapes,திராட்சை,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/b/bb/Table_grapes_on_white.jpg,2024-01-01 00:00:00
+c0000001-0039-4000-8000-000000000039,Apple,ஆப்பிள்,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg,2024-01-01 00:00:00
+c0000001-0040-4000-8000-000000000040,Orange,ஆரஞ்சு,Fruit,kg,https://upload.wikimedia.org/wikipedia/commons/c/c4/Orange-Fruit-Pieces.jpg,2024-01-01 00:00:00
+c0000001-0041-4000-8000-000000000041,Chow Chow,சௌ சௌ,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/7/73/Sechium_edule_fruit.jpg,2024-01-01 00:00:00
+c0000001-0042-4000-8000-000000000042,Cluster Beans,கொத்தவரங்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/e/e0/Guar_DSCN9038.jpg,2024-01-01 00:00:00
+c0000001-0043-4000-8000-000000000043,Sweet Corn,ஸ்வீட் கார்ன்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/b/b8/Corncobs.jpg,2024-01-01 00:00:00
+c0000001-0044-4000-8000-000000000044,Ash Gourd,பூசணிக்காய்,Vegetable,kg,https://upload.wikimedia.org/wikipedia/commons/f/f8/Wintermelon1.jpg,2024-01-01 00:00:00
+c0000001-0045-4000-8000-000000000045,Red Chilli Dry,காய்ந்த மிளகாய்,Spice,kg,https://upload.wikimedia.org/wikipedia/commons/a/a5/Red_Chilli.jpg,2024-01-01 00:00:00
+c0000001-0046-4000-8000-000000000046,Black Pepper,மிளகு,Spice,kg,https://upload.wikimedia.org/wikipedia/commons/5/5b/Piper_nigrum_Dried_fruits_-_Black_Pepper.jpg,2024-01-01 00:00:00
+c0000001-0047-4000-8000-000000000047,Cardamom,ஏலக்காய்,Spice,kg,https://upload.wikimedia.org/wikipedia/commons/e/e8/Cardamomfruit.jpg,2024-01-01 00:00:00
+c0000001-0048-4000-8000-000000000048,Cloves,கிராம்பு,Spice,kg,https://upload.wikimedia.org/wikipedia/commons/9/9f/Cloves.JPG,2024-01-01 00:00:00
+c0000001-0049-4000-8000-000000000049,Cumin Seeds,சீரகம்,Spice,kg,https://upload.wikimedia.org/wikipedia/commons/9/9f/Cumin_seeds.JPG,2024-01-01 00:00:00
+c0000001-0050-4000-8000-000000000050,Curry Leaves,கறிவேப்பிலை,Leafy,bundle,https://upload.wikimedia.org/wikipedia/commons/0/01/Curryleaves.jpg,2024-01-01 00:00:00

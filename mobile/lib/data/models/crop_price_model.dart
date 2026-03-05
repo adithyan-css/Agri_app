@@ -5,6 +5,7 @@ class CropModel {
   final String? category;
   final String? imageUrl;
   final int? baseShelfLifeDays;
+  final String? unit;
 
   CropModel({
     required this.id,
@@ -13,16 +14,18 @@ class CropModel {
     this.category,
     this.imageUrl,
     this.baseShelfLifeDays,
+    this.unit,
   });
 
   factory CropModel.fromJson(Map<String, dynamic> json) {
     return CropModel(
-      id: json['id'],
-      nameEn: json['nameEn'],
-      nameTa: json['nameTa'],
+      id: json['id'] ?? '',
+      nameEn: json['nameEn'] ?? '',
+      nameTa: json['nameTa'] ?? '',
       category: json['category'],
       imageUrl: json['imageUrl'],
       baseShelfLifeDays: json['baseShelfLifeDays'],
+      unit: json['unit'],
     );
   }
 

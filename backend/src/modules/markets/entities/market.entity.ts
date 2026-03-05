@@ -1,10 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, CreateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('markets')
 export class Market {
-    @ApiProperty({ example: 'm1111111-1111-1111-1111-111111111111' })
-    @PrimaryGeneratedColumn('uuid')
+    @ApiProperty({ example: 'm0000001-0001-4000-8000-000000000001' })
+    @PrimaryColumn({ type: 'text' })
     id: string;
 
     @ApiProperty({ example: 'Koyambedu Market' })
@@ -27,6 +27,14 @@ export class Market {
     // Or handle writes via raw queries to utilize ST_SetSRID(ST_MakePoint)
     @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, select: false })
     location: any;
+
+    @ApiProperty({ example: '+91 422 2554321' })
+    @Column({ nullable: true })
+    phone: string;
+
+    @ApiProperty({ example: '06:00-12:00' })
+    @Column({ name: 'open_hours', nullable: true })
+    openHours: string;
 
     // Virtual distances used during spatial queries
     @ApiProperty({ example: 12.5 })

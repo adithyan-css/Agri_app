@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../providers/language_provider.dart';
+import '../../../data/data_sources/local/local_data_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -106,6 +108,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               );
               if (confirmed == true && mounted) {
+                // Actually clear cached data
+                await LocalDataService.clearAll();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Cache cleared')),
                 );
@@ -157,9 +161,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: const Text('Cancel'),
                       ),
                       FilledButton(
-                        onPressed: () {
+                        onPressed: () async {
                           Navigator.pop(ctx);
-                          context.go('/login');
+                          await FirebaseAuth.instance.signOut();
+                          if (context.mounted) context.go('/login');
                         },
                         child: const Text('Logout'),
                       ),

@@ -83,6 +83,7 @@ secrets.json
 *.key
 google-services.json
 GoogleService-Info.plist
+**/firebase_options.dart
 
 # Data files (large CSVs, trained models)
 *.csv

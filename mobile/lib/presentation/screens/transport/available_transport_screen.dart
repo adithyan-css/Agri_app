@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../data/models/truck_model.dart';
 import '../../providers/transport_provider.dart';
 
@@ -239,9 +240,13 @@ class _TruckCard extends StatelessWidget {
                         border: Border.all(color: Colors.grey.shade200),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const IconButton(
-                        icon: Icon(Icons.phone_outlined, color: _kTextPrimary, size: 20),
-                        onPressed: null,
+                      child: IconButton(
+                        icon: const Icon(Icons.phone_outlined, color: _kTextPrimary, size: 20),
+                        onPressed: () {
+                          if (truck.driverPhone.isNotEmpty) {
+                            launchUrl(Uri.parse('tel:${truck.driverPhone}'));
+                          }
+                        },
                       ),
                     ),
                   ],

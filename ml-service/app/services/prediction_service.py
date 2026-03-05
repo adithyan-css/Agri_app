@@ -4,6 +4,7 @@ from app.models.chronos_forecaster import ChronosForecaster
 from app.models.moving_average import MovingAverageModel
 from app.models.linear_regression import LinearRegressionModel
 from app.models.prophet_model import ProphetForecaster
+from app.config import settings
 import datetime
 import numpy as np
 import logging
@@ -72,7 +73,12 @@ class PredictionService:
 
         # Weighted Ensemble Generation
         # Assuming Chronos/Prophet are better at capturing variance
-        weights = {"chronos": 0.40, "prophet": 0.30, "lr": 0.20, "ma": 0.10}
+        weights = {
+            "chronos": settings.CHRONOS_WEIGHT,
+            "prophet": settings.PROPHET_WEIGHT,
+            "lr": settings.LR_WEIGHT,
+            "ma": settings.MA_WEIGHT,
+        }
         
         ensemble = []
         for i in range(steps):
@@ -98,7 +104,10 @@ class PredictionService:
                 ensemble.append({"mean": historical_prices[-1], "low": historical_prices[-1]*0.9, "high": historical_prices[-1]*1.1})
                 
         # Format response dates
-        last_date = datetime.datetime.strptime(historical_dates[-1], "%Y-%m-%d")
+        try:
+            last_date = datetime.datetime.strptime(historical_dates[-1].split('T')[0], "%Y-%m-%d")
+        except (ValueError, IndexError):
+            last_date = datetime.datetime.utcnow()
         
         predictions = []
         for i, pred in enumerate(ensemble):
@@ -125,7 +134,11 @@ class PredictionService:
         recommendation = "WAIT" if trend == "UP" else "SELL"
         
         # Calculate ensemble confidence based on dispersion between high and low bounds
-        avg_spread = np.mean([(p.upper_bound - p.lower_bound)/p.predicted_price for p in predictions])
+        spreads = []
+        for p in predictions:
+            if p.predicted_price > 0:
+                spreads.append((p.upper_bound - p.lower_bound) / p.predicted_price)
+        avg_spread = np.mean(spreads) if spreads else 1.0
         confidence_score = round(max(0.1, 1.0 - avg_spread), 4)
 
         return PredictionResponse(
