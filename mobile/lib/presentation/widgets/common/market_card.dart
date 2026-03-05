@@ -5,7 +5,7 @@ import '../../../config/theme.dart';
 class MarketCard extends StatelessWidget {
   final String name;
   final String location;
-  final double distance;
+  final double? distance;
   final double? price;
   final bool isOpen;
   final String openHours;
@@ -16,7 +16,7 @@ class MarketCard extends StatelessWidget {
     super.key,
     required this.name,
     required this.location,
-    required this.distance,
+    this.distance,
     this.price,
     this.isOpen = true,
     this.openHours = '',
@@ -91,8 +91,15 @@ class MarketCard extends StatelessWidget {
                       const Icon(Icons.location_on,
                           size: 13, color: AppColors.textSecondary),
                       const SizedBox(width: 3),
-                      Text('$location • ${distance.toStringAsFixed(1)} km',
-                          style: AppTextStyles.caption),
+                      Flexible(
+                        child: Text(
+                          distance != null
+                              ? '$location • ${distance!.toStringAsFixed(1)} km'
+                              : location,
+                          style: AppTextStyles.caption,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                   if (openHours.isNotEmpty)

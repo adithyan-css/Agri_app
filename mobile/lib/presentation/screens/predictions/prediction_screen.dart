@@ -112,9 +112,11 @@ class _PredictionScreenState extends ConsumerState<PredictionScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.share),
-                              label: const Text('Share Forecast'),
+                              onPressed: () => context.push(
+                                '/ai-analysis/${widget.cropId}/${widget.marketId}?name=${widget.cropName}',
+                              ),
+                              icon: const Icon(Icons.psychology),
+                              label: const Text('AI Analysis'),
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
@@ -134,23 +136,60 @@ class _PredictionScreenState extends ConsumerState<PredictionScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Engine Unavailable: $err'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(
-                  directForecastProvider((cropId: widget.cropId, marketId: widget.marketId)),
-                ),
-                child: const Text('Retry'),
+        error: (err, stack) {
+          final isOffline = err.toString().contains('Connection refused') ||
+              err.toString().contains('connection error') ||
+              err.toString().contains('SocketException');
+          final title = isOffline
+              ? 'No Internet Connection'
+              : 'Prediction Engine Unavailable';
+          final subtitle = isOffline
+              ? 'Connect to the internet to view AI price predictions.'
+              : 'The AI prediction service is temporarily offline. Please try again later.';
+          final icon = isOffline ? Icons.wifi_off : Icons.model_training;
+
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 72, color: Colors.grey.shade400),
+                  const SizedBox(height: 20),
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => ref.invalidate(
+                      directForecastProvider((cropId: widget.cropId, marketId: widget.marketId)),
+                    ),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10b77f),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Go Back'),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

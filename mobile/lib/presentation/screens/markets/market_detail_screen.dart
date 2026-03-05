@@ -213,6 +213,45 @@ class MarketDetailScreen extends ConsumerWidget {
                           style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            final lat = selectedMarket?.lat;
+                            final lon = selectedMarket?.lng;
+                            final name = Uri.encodeComponent(marketName);
+                            context.push('/weather?lat=$lat&lon=$lon&name=$name');
+                          },
+                          icon: const Icon(Icons.cloud_outlined),
+                          label: const Text('Weather'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF3B82F6),
+                            side: const BorderSide(color: Color(0xFF3B82F6)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => context.push('/transport'),
+                          icon: const Icon(Icons.local_shipping_outlined),
+                          label: const Text('Transport'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFF59E0B),
+                            side: const BorderSide(color: Color(0xFFF59E0B)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),

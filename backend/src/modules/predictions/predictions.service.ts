@@ -35,7 +35,19 @@ export class PredictionsService {
         });
 
         if (existing.length > 0) {
-            return { source: 'database_cache', data: existing };
+            // Compute trend, recommendation, and confidence from cached predictions
+            const prices = existing.map(p => Number(p.predictedPrice));
+            const first = prices[0];
+            const last = prices[prices.length - 1];
+            let trend = 'STABLE';
+            if (last > first * 1.02) trend = 'UP';
+            else if (last < first * 0.98) trend = 'DOWN';
+
+            const recommendation = trend === 'UP' ? 'WAIT' : 'SELL';
+            const confidenceScores = existing.map(p => Number(p.confidenceScore || 0));
+            const confidence = confidenceScores.reduce((a, b) => a + b, 0) / confidenceScores.length;
+
+            return { source: 'database_cache', trend, recommendation, confidence, data: existing };
         }
 
         try {

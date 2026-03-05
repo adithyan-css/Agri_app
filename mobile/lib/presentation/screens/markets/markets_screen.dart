@@ -32,9 +32,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(locationProvider.notifier).getCurrentLocation();
-    });
+    // Location is auto-fetched by the provider on first access
   }
 
   @override
@@ -91,10 +89,9 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                 .compareTo(b.computedDistanceKm ?? double.infinity));
         break;
       case 'Best Price':
-        // Sort by distance as proxy (closer → cheaper transport)
+        // Sort by highest average price first
         enriched.sort((a, b) =>
-            (a.computedDistanceKm ?? double.infinity)
-                .compareTo(b.computedDistanceKm ?? double.infinity));
+            (b.market.avgPrice).compareTo(a.market.avgPrice));
         break;
       case 'Under 10km':
         enriched = enriched
@@ -213,6 +210,67 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
             ),
           ),
 
+          // Location status bar
+          if (location.isLoading)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              color: AppColors.primary.withOpacity(0.08),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 14, height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text('Getting your location...',
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                ],
+              ),
+            )
+          else if (location.hasLocation)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              color: AppColors.chipGreen,
+              child: Row(
+                children: [
+                  const Icon(Icons.my_location, size: 14, color: AppColors.primary),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Location active \u2022 Distances from your location',
+                    style: TextStyle(fontSize: 12, color: AppColors.primary),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => ref.read(locationProvider.notifier).getCurrentLocation(),
+                    child: const Icon(Icons.refresh, size: 16, color: AppColors.primary),
+                  ),
+                ],
+              ),
+            )
+          else if (location.error != null)
+            GestureDetector(
+              onTap: () => ref.read(locationProvider.notifier).getCurrentLocation(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                color: Colors.orange.shade50,
+                child: Row(
+                  children: [
+                    Icon(Icons.location_off, size: 14, color: Colors.orange.shade700),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Location unavailable \u2022 Tap to retry',
+                        style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // Market list
           Expanded(
             child: marketsAsync.when(
@@ -247,20 +305,21 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                   itemCount: filtered.length,
                   itemBuilder: (_, i) {
                     final market = filtered[i];
-                    // Recompute distance for display
-                    double displayDistance = market.distanceKm ?? 0.0;
-                    if (displayDistance == 0.0 &&
-                        location.hasLocation &&
+                    // Compute distance from user location to market
+                    double? displayDistance;
+                    if (location.hasLocation &&
                         market.lat != null &&
                         market.lng != null) {
                       displayDistance = _haversineDistance(
                           location.latitude!, location.longitude!, market.lat!, market.lng!);
+                    } else if (market.distanceKm != null && market.distanceKm! > 0) {
+                      displayDistance = market.distanceKm;
                     }
                     return widgets.MarketCard(
                       name: market.nameEn,
                       location: market.district,
                       distance: displayDistance,
-                      price: 0.0,
+                      price: market.avgPrice > 0 ? market.avgPrice : null,
                       isOpen: market.isOpen ?? market.isActive,
                       openHours: market.openHours ?? 'Hours N/A',
                       showBestPrice: i == 0 && _activeFilter == 'Best Price',
@@ -279,10 +338,10 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline,
-                        size: 48, color: AppColors.error),
+                    Icon(Icons.wifi_off,
+                        size: 48, color: Colors.grey.shade400),
                     const SizedBox(height: 16),
-                    Text('Failed to load: $err'),
+                    const Text('Could not load markets'),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => ref.invalidate(marketListProvider),

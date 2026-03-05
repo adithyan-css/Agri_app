@@ -204,9 +204,9 @@ class PredictionsScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    Icon(Icons.cloud_off, size: 48, color: Colors.grey.shade400),
                     const SizedBox(height: 16),
-                    Text('Error: $err'),
+                    const Text('Could not load crop list'),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => ref.invalidate(cropListProvider),

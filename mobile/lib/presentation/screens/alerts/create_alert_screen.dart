@@ -54,11 +54,12 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             cropsAsync.when(
               data: (crops) => DropdownButtonFormField<CropModel>(
                 value: _selectedCrop ?? crops.where((c) => c.id == widget.initialCropId).firstOrNull,
+                isExpanded: true,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   hintText: 'Choose a crop',
                 ),
-                items: crops.map((crop) => DropdownMenuItem(value: crop, child: Text(crop.nameEn))).toList(),
+                items: crops.map((crop) => DropdownMenuItem(value: crop, child: Text(crop.nameEn, overflow: TextOverflow.ellipsis))).toList(),
                 onChanged: (crop) => setState(() => _selectedCrop = crop),
               ),
               loading: () => const CircularProgressIndicator(),
@@ -72,11 +73,12 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             marketsAsync.when(
               data: (markets) => DropdownButtonFormField<MarketModel>(
                 value: _selectedMarket,
+                isExpanded: true,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   hintText: 'Choose a market',
                 ),
-                items: markets.map((m) => DropdownMenuItem(value: m, child: Text(m.nameEn))).toList(),
+                items: markets.map((m) => DropdownMenuItem(value: m, child: Text(m.nameEn, overflow: TextOverflow.ellipsis))).toList(),
                 onChanged: (market) => setState(() => _selectedMarket = market),
               ),
               loading: () => const CircularProgressIndicator(),
@@ -197,8 +199,14 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final isOffline = e.toString().contains('Connection refused') ||
+            e.toString().contains('connection error') ||
+            e.toString().contains('SocketException');
+        final msg = isOffline
+            ? 'No internet connection. Please connect and try again.'
+            : 'Failed to create alert. Please try again.';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create alert: $e')),
+          SnackBar(content: Text(msg)),
         );
       }
     } finally {

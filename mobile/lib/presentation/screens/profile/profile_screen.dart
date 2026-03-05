@@ -105,15 +105,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
           // Actions
           ListTile(
+            leading: const Icon(Icons.settings_outlined),
+            title: const Text('Settings'),
+            subtitle: const Text('Language, notifications, data'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings'),
+          ),
+          ListTile(
             leading: const Icon(Icons.history),
             title: const Text('My Saved Markets'),
-            onTap: () {
-               context.push('/nearby-markets');
-            },
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/nearby-markets'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.local_shipping_outlined),
+            title: const Text('Transport & Bookings'),
+            subtitle: const Text('Book trucks, view bookings'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/transport'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.receipt_long_outlined),
+            title: const Text('My Bookings'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/bookings'),
           ),
           ListTile(
             leading: const Icon(Icons.help_outline),
             title: const Text('Help & Support'),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () {
               // Support Logic
             },

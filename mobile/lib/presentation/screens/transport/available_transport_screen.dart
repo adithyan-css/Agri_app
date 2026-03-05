@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../data/models/truck_model.dart';
 import '../../providers/transport_provider.dart';
 
@@ -33,6 +34,11 @@ class AvailableTransportScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.receipt_long, color: _kTextPrimary),
+            tooltip: 'My Bookings',
+            onPressed: () => context.push('/bookings'),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh, color: _kTextPrimary),
             onPressed: () => ref.invalidate(availableTrucksProvider),
@@ -210,7 +216,7 @@ class _TruckCard extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/transport/book');
+                          context.push('/transport/book?truckId=${truck.id}');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _kPrimary,

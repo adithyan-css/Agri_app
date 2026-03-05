@@ -114,9 +114,23 @@ class AlertsScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              Icon(
+                err.toString().contains('Connection refused') ? Icons.wifi_off : Icons.error_outline,
+                size: 48,
+                color: Colors.grey.shade400,
+              ),
               const SizedBox(height: 16),
-              Text('Failed to load alerts: $err'),
+              Text(
+                err.toString().contains('Connection refused')
+                    ? 'No internet connection'
+                    : 'Could not load alerts',
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Connect to the internet to manage your alerts',
+                style: TextStyle(color: Colors.grey.shade500),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(alertsProvider),

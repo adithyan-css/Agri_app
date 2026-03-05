@@ -132,6 +132,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: const Text('Privacy Policy'),
             onTap: () {},
           ),
+          ListTile(
+            leading: const Icon(Icons.tour_outlined),
+            title: const Text('View App Tour'),
+            subtitle: const Text('See the onboarding walkthrough again'),
+            onTap: () => context.push('/onboarding'),
+          ),
 
           const Divider(),
 

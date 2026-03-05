@@ -202,7 +202,10 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
                   ),
                   error: (err, _) => Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Center(child: Text('Error: $err')),
+                    child: Center(child: Text(
+                      'Could not load prices. Pull to refresh.',
+                      style: TextStyle(color: Colors.grey.shade500),
+                    )),
                   ),
                 ),
               ],

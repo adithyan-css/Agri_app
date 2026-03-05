@@ -1,5 +1,7 @@
-import torch
-# from transformers import AutoModelForSeq2SeqLM # Mocked for dependencies setup failure
+try:
+    import torch
+except ImportError:
+    torch = None
 import numpy as np
 
 class ChronosForecaster:

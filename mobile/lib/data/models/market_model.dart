@@ -11,6 +11,7 @@ class MarketModel {
   final String? phone;
   final String? openHours;
   final bool? isOpen;
+  final double avgPrice;
 
   MarketModel({
     required this.id,
@@ -25,6 +26,7 @@ class MarketModel {
     this.phone,
     this.openHours,
     this.isOpen,
+    this.avgPrice = 0,
   });
 
   factory MarketModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class MarketModel {
       phone: json['phone'],
       openHours: json['openHours'],
       isOpen: json['isOpen'],
+      avgPrice: (json['avgPrice'] as num?)?.toDouble() ?? 0,
     );
   }
 

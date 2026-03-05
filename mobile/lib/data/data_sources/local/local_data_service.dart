@@ -122,6 +122,7 @@ class LocalDataService {
       lng: 76.9558,
       openHours: '6:00 AM - 6:00 PM',
       isOpen: true,
+      avgPrice: 1850.0,
     ),
     MarketModel(
       id: 'seed-salem',
@@ -133,6 +134,7 @@ class LocalDataService {
       lng: 78.1460,
       openHours: '6:00 AM - 6:00 PM',
       isOpen: true,
+      avgPrice: 1720.0,
     ),
     MarketModel(
       id: 'seed-madurai',
@@ -144,6 +146,7 @@ class LocalDataService {
       lng: 78.1198,
       openHours: '5:00 AM - 7:00 PM',
       isOpen: true,
+      avgPrice: 1650.0,
     ),
     MarketModel(
       id: 'seed-erode',
@@ -155,6 +158,7 @@ class LocalDataService {
       lng: 77.7172,
       openHours: '6:00 AM - 5:00 PM',
       isOpen: true,
+      avgPrice: 1780.0,
     ),
     MarketModel(
       id: 'seed-chennai',
@@ -166,6 +170,7 @@ class LocalDataService {
       lng: 80.1948,
       openHours: '4:00 AM - 8:00 PM',
       isOpen: true,
+      avgPrice: 2100.0,
     ),
     MarketModel(
       id: 'seed-nashik',
@@ -177,6 +182,7 @@ class LocalDataService {
       lng: 74.2399,
       openHours: '6:00 AM - 6:00 PM',
       isOpen: true,
+      avgPrice: 1900.0,
     ),
     MarketModel(
       id: 'seed-azadpur',
@@ -188,6 +194,7 @@ class LocalDataService {
       lng: 77.1780,
       openHours: '3:00 AM - 9:00 PM',
       isOpen: true,
+      avgPrice: 2250.0,
     ),
     MarketModel(
       id: 'seed-bangalore',
@@ -199,6 +206,7 @@ class LocalDataService {
       lng: 77.5436,
       openHours: '5:00 AM - 7:00 PM',
       isOpen: true,
+      avgPrice: 1950.0,
     ),
     MarketModel(
       id: 'seed-jaipur',
@@ -210,6 +218,7 @@ class LocalDataService {
       lng: 75.8648,
       openHours: '6:00 AM - 6:00 PM',
       isOpen: true,
+      avgPrice: 1680.0,
     ),
     MarketModel(
       id: 'seed-lucknow',
@@ -221,6 +230,7 @@ class LocalDataService {
       lng: 80.9462,
       openHours: '5:00 AM - 7:00 PM',
       isOpen: true,
+      avgPrice: 1560.0,
     ),
   ];
 

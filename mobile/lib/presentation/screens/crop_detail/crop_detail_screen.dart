@@ -125,6 +125,26 @@ class CropDetailScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+
+            // AI Analysis button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final marketId = selectedMarket?.id ?? 'default';
+                  context.push('/ai-analysis/$cropId/$marketId?name=$cropName');
+                },
+                icon: const Icon(Icons.psychology),
+                label: const Text('AI Sell / Wait Analysis', style: TextStyle(fontSize: 16)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF10b77f),
+                  side: const BorderSide(color: Color(0xFF10b77f)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),

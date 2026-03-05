@@ -20,10 +20,15 @@ class CropApi {
       final rawList = response.data as List;
       // Cache for offline use
       LocalDataService.cacheCrops(rawList);
-      return rawList.map((item) => CropModel.fromJson(item)).toList();
+      final crops = rawList.map((item) => CropModel.fromJson(item)).toList();
+      // Deduplicate by name (keep first occurrence)
+      final seen = <String>{};
+      return crops.where((c) => seen.add(c.nameEn)).toList();
     } catch (e) {
       // Fallback to cached / seed data when offline
-      return LocalDataService.getCachedCrops();
+      final crops = await LocalDataService.getCachedCrops();
+      final seen = <String>{};
+      return crops.where((c) => seen.add(c.nameEn)).toList();
     }
   }
 

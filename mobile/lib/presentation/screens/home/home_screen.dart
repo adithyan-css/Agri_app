@@ -12,6 +12,7 @@ import '../../widgets/common/ai_recommendation_banner.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
 import '../../widgets/common/section_header.dart';
 import '../../widgets/common/market_card.dart' as widgets;
+import '../../providers/weather_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -69,6 +70,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             _buildMarketsList(marketsAsync, lang),
             const SizedBox(height: 16),
+
+            // Quick Access — Weather, Transport, Bookings
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text('Quick Access',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  )),
+            ),
+            const SizedBox(height: 8),
+            _buildQuickAccessRow(context, ref),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -321,8 +336,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       error: (err, _) => Center(
           child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Text('Error: $err'),
+        child: Text(
+          err.toString().contains('Connection refused') ? 'Offline – showing cached data' : 'Could not load crops',
+          style: TextStyle(color: Colors.grey.shade500),
+        ),
       )),
+    );
+  }
+
+  Widget _buildQuickAccessRow(BuildContext context, WidgetRef ref) {
+    final loc = ref.watch(locationProvider);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _QuickAccessCard(
+            icon: Icons.cloud_outlined,
+            label: 'Weather',
+            color: const Color(0xFF3B82F6),
+            onTap: () {
+              final lat = loc.latitude ?? 11.0168;
+              final lon = loc.longitude ?? 76.9558;
+              final name = Uri.encodeComponent('My Location');
+              context.push('/weather?lat=$lat&lon=$lon&name=$name');
+            },
+          ),
+          const SizedBox(width: 10),
+          _QuickAccessCard(
+            icon: Icons.local_shipping_outlined,
+            label: 'Transport',
+            color: const Color(0xFFF59E0B),
+            onTap: () => context.push('/transport'),
+          ),
+          const SizedBox(width: 10),
+          _QuickAccessCard(
+            icon: Icons.receipt_long_outlined,
+            label: 'Bookings',
+            color: const Color(0xFF8B5CF6),
+            onTap: () => context.push('/bookings'),
+          ),
+          const SizedBox(width: 10),
+          _QuickAccessCard(
+            icon: Icons.auto_graph,
+            label: 'AI Analysis',
+            color: const Color(0xFFEF4444),
+            onTap: () => context.push('/predictions'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -340,8 +401,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             return widgets.MarketCard(
               name: market.nameEn,
               location: market.district,
-              distance: market.distanceKm ?? 0.0,
-              price: 0.0,
+              distance: (market.distanceKm != null && market.distanceKm! > 0)
+                  ? market.distanceKm
+                  : null,
+              price: market.avgPrice > 0 ? market.avgPrice : null,
               isOpen: market.isOpen ?? market.isActive,
               openHours: market.openHours ?? 'Hours N/A',
               showBestPrice: markets.indexOf(market) == 0,
@@ -358,8 +421,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       error: (err, _) => Center(
           child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Text('Error: $err'),
+        child: Text(
+          err.toString().contains('Connection refused') ? 'Offline – showing cached data' : 'Could not load markets',
+          style: TextStyle(color: Colors.grey.shade500),
+        ),
       )),
+    );
+  }
+}
+
+class _QuickAccessCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickAccessCard({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withOpacity(0.2)),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 26),
+              const SizedBox(height: 6),
+              Text(label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  )),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

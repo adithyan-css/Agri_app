@@ -26,9 +26,5 @@ final directForecastProvider = FutureProvider.family<ForecastResponse, ({String 
 /// AI Sell or Wait recommendation provider
 final sellOrWaitProvider = FutureProvider.family<RecommendationModel?, ({String cropId, String marketId})>((ref, params) async {
   final predictionRepo = ref.watch(predictionRepositoryProvider);
-  try {
-    return await predictionRepo.getRecommendation(params.cropId, params.marketId);
-  } catch (e) {
-    return null;
-  }
+  return await predictionRepo.getRecommendation(params.cropId, params.marketId);
 });

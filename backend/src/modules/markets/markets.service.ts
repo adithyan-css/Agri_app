@@ -18,8 +18,37 @@ export class MarketsService {
         private readonly cropsService: CropsService,
     ) { }
 
-    async findAll(): Promise<Market[]> {
-        return this.marketRepository.find({ where: { isActive: true } });
+    async findAll(): Promise<any[]> {
+        // Return markets with extracted lat/lng from PostGIS and latest average price
+        const result = await this.marketRepository.query(`
+            SELECT
+                m.id,
+                m.name_en AS "nameEn",
+                m.name_ta AS "nameTa",
+                m.district,
+                m.state,
+                m.is_active AS "isActive",
+                m.created_at AS "createdAt",
+                ST_Y(m.location::geometry) AS "lat",
+                ST_X(m.location::geometry) AS "lng",
+                COALESCE(
+                    (SELECT ROUND(AVG(cp.price_per_kg)::numeric, 2)
+                     FROM crop_prices cp
+                     WHERE cp.market_id = m.id::text
+                       AND cp.record_date = (SELECT MAX(record_date) FROM crop_prices)),
+                    0
+                ) AS "avgPrice"
+            FROM markets m
+            WHERE m.is_active = true
+            ORDER BY m.name_en ASC
+        `);
+        // Parse numeric strings to numbers
+        return result.map((row: any) => ({
+            ...row,
+            lat: row.lat ? parseFloat(row.lat) : null,
+            lng: row.lng ? parseFloat(row.lng) : null,
+            avgPrice: row.avgPrice ? parseFloat(row.avgPrice) : 0,
+        }));
     }
 
     /**

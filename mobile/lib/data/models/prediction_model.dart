@@ -60,14 +60,28 @@ class ForecastResponse {
   });
 
   factory ForecastResponse.fromJson(Map<String, dynamic> json) {
+    final dataList = (json['data'] as List?) ?? [];
+    final predictions = dataList
+        .map((item) => PredictionModel.fromJson(item))
+        .toList();
+
+    // Compute confidence from predictions if not provided at top level
+    double confidence = 0.0;
+    if (json['confidence'] != null) {
+      confidence = (json['confidence'] as num).toDouble();
+    } else if (predictions.isNotEmpty) {
+      confidence = predictions
+              .map((p) => p.confidenceScore)
+              .reduce((a, b) => a + b) /
+          predictions.length;
+    }
+
     return ForecastResponse(
       source: json['source'] ?? 'unknown',
       trend: json['trend'] ?? 'STABLE',
       recommendation: json['recommendation'] ?? 'WAIT',
-      confidence: (json['confidence'] as num).toDouble(),
-      data: (json['data'] as List)
-          .map((item) => PredictionModel.fromJson(item))
-          .toList(),
+      confidence: confidence,
+      data: predictions,
     );
   }
 }

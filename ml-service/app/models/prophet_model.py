@@ -1,5 +1,8 @@
 import pandas as pd
-from prophet import Prophet
+try:
+    from prophet import Prophet
+except ImportError:
+    Prophet = None
 import logging
 
 class ProphetForecaster:
@@ -11,6 +14,11 @@ class ProphetForecaster:
         self.logger = logging.getLogger(__name__)
 
     def predict(self, historical_prices: list, dates: list, steps: int = 7) -> list:
+        if Prophet is None:
+            self.logger.warning("Prophet not installed, falling back to flatlines.")
+            val = historical_prices[-1] if historical_prices else 0
+            return [{"mean": val, "low": val*0.9, "high": val*1.1} for _ in range(steps)]
+
         if len(historical_prices) < 14:
             self.logger.warning("Prophet requires more historical data points, falling back to flatlines.")
             val = historical_prices[-1] if historical_prices else 0
