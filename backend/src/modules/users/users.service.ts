@@ -36,4 +36,16 @@ export class UsersService {
         await this.userRepository.update(id, data);
         return this.findOne(id);
     }
+
+    async updatePreferredMarket(firebaseUid: string, marketId: string): Promise<User> {
+        const user = await this.findByFirebaseUid(firebaseUid);
+        if (!user) throw new NotFoundException(`User not found`);
+        user.preferredMarketId = marketId;
+        return this.userRepository.save(user);
+    }
+
+    async getPreferredMarket(firebaseUid: string): Promise<string | null> {
+        const user = await this.findByFirebaseUid(firebaseUid);
+        return user?.preferredMarketId ?? null;
+    }
 }

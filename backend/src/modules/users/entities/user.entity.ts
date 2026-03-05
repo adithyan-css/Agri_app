@@ -37,6 +37,9 @@ export class User {
     @Column({ type: 'float', nullable: true })
     lng: number;
 
+    @Column({ name: 'preferred_market_id', type: 'text', nullable: true })
+    preferredMarketId: string;
+
     @CreateDateColumn()
     createdAt: Date;
 

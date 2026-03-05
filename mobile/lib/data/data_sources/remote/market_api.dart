@@ -68,4 +68,13 @@ class MarketApi {
       return [];
     }
   }
+
+  /// Sync preferred market ID to backend user profile.
+  Future<void> setPreferredMarket(String marketId) async {
+    try {
+      await _dio.patch('/users/me/preferred-market', data: {'marketId': marketId});
+    } catch (_) {
+      // Fire-and-forget — local selection is the source of truth
+    }
+  }
 }

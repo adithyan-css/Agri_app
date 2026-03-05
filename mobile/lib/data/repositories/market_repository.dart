@@ -36,4 +36,9 @@ class MarketRepository {
       radius: radius,
     );
   }
+
+  /// Sync preferred market to backend.
+  Future<void> setPreferredMarket(String marketId) async {
+    return _marketApi.setPreferredMarket(marketId);
+  }
 }

@@ -49,7 +49,13 @@ class _SplashScreenState extends State<SplashScreen>
       // Firebase Auth persists sessions automatically.
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        context.go('/');
+        // Check if user has selected a market
+        final hasMarket = prefs.getString('selected_market') != null;
+        if (hasMarket) {
+          context.go('/');
+        } else {
+          context.go('/select-market');
+        }
       } else if (!hasSeenOnboarding) {
         await prefs.setBool('has_seen_onboarding', true);
         context.go('/onboarding');

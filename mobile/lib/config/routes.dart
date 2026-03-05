@@ -19,13 +19,14 @@ import '../presentation/screens/profile/profile_screen.dart';
 import '../presentation/screens/settings/settings_screen.dart';
 import '../presentation/screens/onboarding/onboarding_screen.dart';
 import '../presentation/screens/ai_analysis/ai_recommendation_screen.dart';
+import '../presentation/screens/markets/market_selector_screen.dart';
 import '../presentation/screens/transport/available_transport_screen.dart';
 import '../presentation/screens/transport/book_transport_screen.dart';
 import '../presentation/screens/transport/my_bookings_screen.dart';
 import '../presentation/screens/weather/weather_impact_screen.dart';
 
 /// Routes that don't require authentication
-const _publicRoutes = {'/splash', '/onboarding', '/login', '/register'};
+const _publicRoutes = {'/splash', '/onboarding', '/login', '/register', '/select-market'};
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',
@@ -72,6 +73,13 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/markets',
       builder: (context, state) => const MarketsScreen(),
+    ),
+    GoRoute(
+      path: '/select-market',
+      builder: (context, state) {
+        final isChanging = state.uri.queryParameters['changing'] == 'true';
+        return MarketSelectorScreen(isChanging: isChanging);
+      },
     ),
     GoRoute(
       path: '/market-detail/:marketId',

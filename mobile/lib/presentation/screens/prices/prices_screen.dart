@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/colors.dart';
 import '../../../config/theme.dart';
 import '../../providers/crop_provider.dart';
+import '../../providers/market_provider.dart';
 import '../../widgets/common/green_gradient_header.dart';
 import '../../widgets/common/price_card.dart' as widgets;
 import '../../widgets/common/section_header.dart';
@@ -56,15 +57,84 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
   @override
   Widget build(BuildContext context) {
     final cropsAsync = ref.watch(cropListProvider);
+    final selectedMarket = ref.watch(selectedMarketProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          const GreenGradientHeader(
+          GreenGradientHeader(
             title: "Today's Prices",
-            subtitle: 'Live from API',
+            subtitle: selectedMarket != null
+                ? selectedMarket.nameEn
+                : 'Select a market',
+            trailing: IconButton(
+              icon: const Icon(Icons.swap_horiz, color: Colors.white),
+              onPressed: () => context.push('/select-market?changing=true'),
+            ),
           ),
+
+          // Market selection bar
+          if (selectedMarket == null)
+            GestureDetector(
+              onTap: () => context.push('/select-market?changing=true'),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                color: AppColors.accent.withOpacity(0.12),
+                child: Row(
+                  children: [
+                    Icon(Icons.store, color: AppColors.accent, size: 18),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'No market selected — tap to choose your mandi',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios,
+                        size: 14, color: AppColors.textSecondary),
+                  ],
+                ),
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: AppColors.chipGreen,
+              child: Row(
+                children: [
+                  const Icon(Icons.store, size: 14, color: AppColors.primary),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '${selectedMarket.nameEn} • ${selectedMarket.district}',
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.push('/select-market?changing=true'),
+                    child: const Text(
+                      'Change',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Crop tabs — driven by actual crop list
           cropsAsync.when(

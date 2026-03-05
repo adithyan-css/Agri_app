@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -25,6 +25,6 @@ export class NearbyMarketsDto {
 
     @ApiProperty({ example: 'c1111111-1111-1111-1111-111111111111', required: false, description: 'Crop UUID to calculate prices & profit' })
     @IsOptional()
-    @IsUUID()
+    @IsString()
     cropId?: string;
 }

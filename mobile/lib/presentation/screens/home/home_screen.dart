@@ -52,7 +52,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _buildHeader(context, lang, user),
             const SizedBox(height: 16),
             _buildSearchBar(),
-            const SizedBox(height: 12),
+            const SizedBox(height: 4),
+
+            // Selected market bar
+            _buildSelectedMarketBar(),
+            const SizedBox(height: 8),
 
             // AI Recommendation — live data from sellOrWaitProvider
             _buildAiRecommendation(cropsAsync),
@@ -238,6 +242,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             borderSide: BorderSide.none,
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedMarketBar() {
+    final selectedMarket = ref.watch(selectedMarketProvider);
+    if (selectedMarket == null) {
+      return GestureDetector(
+        onTap: () => context.push('/select-market?changing=true'),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.accent.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.store, color: AppColors.accent, size: 18),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Select your market (mandi) for prices',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios,
+                  size: 14, color: AppColors.textSecondary),
+            ],
+          ),
+        ),
+      );
+    }
+    return GestureDetector(
+      onTap: () => context.push('/select-market?changing=true'),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.chipGreen,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.store, color: AppColors.primary, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    selectedMarket.nameEn,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryDark,
+                    ),
+                  ),
+                  Text(
+                    selectedMarket.district,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Text(
+              'Change',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
+          ],
         ),
       ),
     );

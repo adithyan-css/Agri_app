@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/market_provider.dart';
 import '../../../data/data_sources/local/local_data_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -62,6 +63,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
           ),
+
+          const Divider(),
+
+          // Market Selection
+          _SectionHeader(title: 'Market'),
+          Consumer(builder: (context, ref, _) {
+            final selectedMarket = ref.watch(selectedMarketProvider);
+            return ListTile(
+              leading: const Icon(Icons.store),
+              title: const Text('Selected Market'),
+              subtitle: Text(
+                selectedMarket != null
+                    ? '${selectedMarket.nameEn} • ${selectedMarket.district}'
+                    : 'No market selected',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/select-market?changing=true'),
+            );
+          }),
 
           const Divider(),
 

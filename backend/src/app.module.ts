@@ -13,6 +13,7 @@ import { WeatherModule } from './modules/weather/weather.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
 import { TransportModule } from './modules/transport/transport.module';
+import { MandiDataModule } from './modules/mandi-data/mandi-data.module';
 
 @Module({
     imports: [
@@ -35,7 +36,8 @@ import { TransportModule } from './modules/transport/transport.module';
         RecommendationsModule,
         WeatherModule,
         AlertsModule,
-        TransportModule
+        TransportModule,
+        MandiDataModule
     ],
     controllers: [],
     providers: [],
