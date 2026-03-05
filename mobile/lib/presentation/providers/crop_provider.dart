@@ -21,6 +21,15 @@ final latestPriceProvider = FutureProvider.family<Map<String, dynamic>, String>(
   }
 });
 
+/// Fetches latest prices for ALL crops at the selected market in one call.
+/// Returns a list of maps with: cropId, nameEn, nameTa, price, source, etc.
+final allCropPricesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final cropRepo = ref.watch(cropRepositoryProvider);
+  final selectedMarket = ref.watch(selectedMarketProvider);
+  if (selectedMarket == null) return [];
+  return cropRepo.getAllCropPricesForMarket(selectedMarket.id);
+});
+
 /// Provider for price history data. The parameter is a record of (cropId, marketId, days).
 final priceHistoryProvider = FutureProvider.family<List<Map<String, dynamic>>, ({String cropId, String marketId, int days})>((ref, params) async {
   final cropRepo = ref.watch(cropRepositoryProvider);

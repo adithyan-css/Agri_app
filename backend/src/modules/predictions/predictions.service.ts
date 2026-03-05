@@ -146,31 +146,40 @@ export class PredictionsService {
         }
 
         // Step 1: Get the current (latest) price for this crop at this market
+        // If no price at selected market, fall back to any market with data
         let latestPrice: any;
+        let usedMarketId = marketId;
         try {
             latestPrice = await this.cropsService.getLatestPrice(cropId, marketId);
         } catch (error) {
             if (error instanceof NotFoundException) {
-                return {
-                    recommendation: 'WAIT',
-                    trend: 'UNKNOWN',
-                    currentPrice: 0,
-                    predictedPrice: 0,
-                    avgPredictedPrice: 0,
-                    expectedProfit: 0,
-                    confidence: 0,
-                    reason: 'No price data available for this crop at the selected market yet. Please check back later.',
-                    predictions: [],
-                };
+                this.logger.warn(`No price for crop=${cropId} at market=${marketId}, trying any market`);
+                try {
+                    latestPrice = await this.cropsService.getLatestPriceAnyMarket(cropId);
+                    usedMarketId = latestPrice.marketId;
+                } catch {
+                    return {
+                        recommendation: 'WAIT',
+                        trend: 'UNKNOWN',
+                        currentPrice: 0,
+                        predictedPrice: 0,
+                        avgPredictedPrice: 0,
+                        expectedProfit: 0,
+                        confidence: 0,
+                        reason: 'No price data available for this crop at any market yet. Please check back later.',
+                        predictions: [],
+                    };
+                }
+            } else {
+                throw error;
             }
-            throw error;
         }
         const currentPrice = Number(latestPrice.pricePerKg);
 
         // Step 2: Get the AI forecast (uses cache or calls ML service)
         let forecast: any;
         try {
-            forecast = await this.getAiForecast(cropId, marketId);
+            forecast = await this.getAiForecast(cropId, usedMarketId);
         } catch (error) {
             this.logger.warn(`AI forecast unavailable for crop=${cropId} market=${marketId}: ${error.message}`);
             return {

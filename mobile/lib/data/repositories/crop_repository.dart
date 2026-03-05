@@ -23,4 +23,8 @@ class CropRepository {
   Future<List<Map<String, dynamic>>> getHistory(String cropId, String marketId, {int days = 7}) async {
     return _cropApi.getHistory(cropId, marketId, days: days);
   }
+
+  Future<List<Map<String, dynamic>>> getAllCropPricesForMarket(String marketId) async {
+    return _cropApi.getAllCropPricesForMarket(marketId);
+  }
 }

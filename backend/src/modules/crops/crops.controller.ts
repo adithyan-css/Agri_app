@@ -16,6 +16,12 @@ export class CropsController {
         return this.cropsService.findAllCrops();
     }
 
+    @Get('market/:marketId/prices')
+    @ApiOperation({ summary: 'Get latest prices for all crops at a specific market' })
+    getAllCropPricesForMarket(@Param('marketId') marketId: string) {
+        return this.cropsService.getAllCropPricesForMarket(marketId);
+    }
+
     @Get(':cropId/markets/:marketId/latest-price')
     @ApiOperation({ summary: 'Get latest recorded price for crop at market' })
     getLatestPrice(

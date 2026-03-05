@@ -1,32 +1,96 @@
-# AgriPrice AI
+<div align="center">
 
-**An AI-powered mobile platform that helps Indian farmers get better prices for their crops.**
+# 🌾 AgriPrice AI
 
-Farmers in India lose a significant chunk of their income simply because they don't have visibility into what their produce is worth at different markets. AgriPrice AI fixes that — it pulls live mandi prices, runs AI forecasts to predict where prices are headed, tells you whether to sell now or wait, finds the nearest high-paying market, and even calculates whether it's worth the transport cost to get there.
+### Crop Price Intelligence for Indian Farmers
 
-The system is built as three services: a Flutter mobile app for the farmer's hands, a NestJS API backend that coordinates everything, and a Python ML microservice that runs a 4-model ensemble for price prediction.
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
+[![NestJS](https://img.shields.io/badge/NestJS-10.x-E0234E?logo=nestjs)](https://nestjs.com)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python)](https://python.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql)](https://postgresql.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**Live mandi prices · 7-day AI forecasts · Sell/Wait decisions · Market discovery · Transport profit**
+
+</div>
 
 ---
 
-## What It Does
+## The Problem
 
-**Real-time mandi prices** — Pulls commodity prices from the Government of India's Open Data API (data.gov.in) every 6 hours and stores them locally. Works offline too — prices are cached on the phone.
+Indian farmers lose an estimated ₹50,000 crores annually because they sell at the wrong time, at the wrong market, to the wrong buyer. A tomato farmer in Salem might sell at ₹35/kg locally while Coimbatore pays ₹42/kg — but he doesn't know that. And even if he did, he can't tell whether prices will climb further next week, or whether the transport costs will eat the profit.
 
-**7-day AI price forecasts** — Runs historical price data through four different ML models (Chronos, Prophet, Linear Regression, Moving Average), blends their outputs with learned weights, and produces a 7-day forecast with confidence intervals.
+AgriPrice AI puts that intelligence in his pocket. It pulls live government mandi prices, runs a 4-model AI ensemble to forecast the next 7 days, tells the farmer whether to sell now or wait, finds nearby markets ranked by profit after transport, and does it all in Tamil.
 
-**Sell or Wait recommendation** — Compares today's price against the AI forecast. If prices are trending up by more than 2%, it tells the farmer to wait. Otherwise, sell now.
+---
 
-**Nearby market discovery** — Uses the phone's GPS and PostGIS spatial queries to find markets within a given radius, ranked by which ones offer the best price after transport costs.
+## Table of Contents
 
-**Transport profit calculator** — Uses OpenRouteService for real road distances (not straight-line), factors in truck capacity, fuel cost per km, and loading charges to calculate net profit at each market.
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Running with Docker](#running-with-docker)
+- [API Overview](#api-overview)
+- [ML Pipeline](#ml-pipeline)
+- [Database](#database)
+- [Deployment](#deployment)
+- [How It Works End-to-End](#how-it-works-end-to-end)
+- [Future Improvements](#future-improvements)
+- [Contributing](#contributing)
+- [License](#license)
 
-**Price alerts** — Set a target price for any crop at any market. A cron job checks hourly and sends a push notification when the price crosses your threshold.
+---
 
-**Weather impact** — Pulls OpenWeatherMap forecasts and feeds temperature, rainfall, and humidity into the prediction models as features.
+## Key Features
 
-**Truck booking** — Browse available trucks, see their rates and capacity, and book one.
+### 📊 Live Mandi Prices
+Pulls commodity prices from the Government of India's Open Data API (data.gov.in) every 6 hours via automated cron job. 100+ commodity name mappings across 38+ Tamil Nadu Uzhavar Sandhai APMC markets. Prices are converted from quintal rates to per-kg and stored in PostgreSQL. The mobile app caches prices locally for offline access.
 
-**Bilingual** — Full English and Tamil localization, including voice input for search.
+### 🤖 7-Day AI Price Forecasts
+Four independent ML models run on 90 days of historical price data and produce a 7-day forecast with confidence intervals:
+
+| Model | Weight | Strength |
+|---|---|---|
+| **Amazon Chronos** | 40% | Zero-shot foundation model — handles any crop without retraining |
+| **Facebook Prophet** | 30% | Captures weekly and seasonal price cycles |
+| **Linear Regression** | 20% | Fast baseline for simple trends |
+| **Moving Average** | 10% | Noise smoother and stability anchor |
+
+If a model fails (insufficient data, timeout), its weight redistributes to the remaining models automatically.
+
+### 🎯 Sell or Wait Recommendation
+Compares today's price against the AI-predicted peak over the next 7 days. If the peak exceeds the current price by more than 2%, it says **WAIT** with a human-readable explanation in English and Tamil. Otherwise, **SELL NOW**. The reasoning includes the predicted peak date and expected gain.
+
+### 📍 GPS-Based Market Discovery
+Uses the phone's GPS and PostGIS spatial queries (`ST_DWithin`) to find mandis within a configurable radius. Each market is ranked by net profit after transport costs — not just by distance or raw price.
+
+### 🚚 Transport Profit Calculator
+Uses OpenRouteService for real road distances (not straight-line), factors in truck capacity, fuel cost per km, and loading charges.
+
+```
+Example:
+Tomato 500kg — Salem (₹35/kg) → Coimbatore (₹42/kg, 85km)
+Transport cost: ₹1.27/kg
+Net Profit: ₹2,862
+```
+
+### 🔔 Price Alerts
+Set a target price for any crop at any market. An hourly cron job monitors all active alerts and fires push notifications via Firebase Cloud Messaging when thresholds are crossed.
+
+### 🌦️ Weather Integration
+Pulls OpenWeatherMap forecasts (temperature, rainfall, humidity) and feeds them into the ML models as features, improving prediction accuracy for weather-sensitive crops.
+
+### 🗣️ Bilingual — English + Tamil
+Full localization with ARB files. Voice-to-text search for farmers who find typing difficult. Every recommendation, alert message, and crop name is available in both languages.
+
+### 🚛 Truck Booking
+Browse available trucks with capacity and rate details, book directly from the app, and track bookings.
+
+### 📶 Offline Mode
+Prices and crop data are cached on-device via SharedPreferences. Core browsing works without internet — predictions require connectivity.
 
 ---
 
@@ -35,300 +99,182 @@ The system is built as three services: a Flutter mobile app for the farmer's han
 ```
 ┌──────────────────────────────────┐
 │     Flutter Mobile App           │
-│     (Riverpod + GoRouter + Dio)  │
-│     22 screens, offline cache    │
+│     Riverpod · GoRouter · Dio    │
+│     22+ screens · offline cache  │
 └──────────────┬───────────────────┘
                │ REST / JSON
+               │ Firebase Bearer Token
                ▼
 ┌──────────────────────────────────┐
-│     NestJS Backend               │
-│     15 modules, Firebase Auth    │
-│     TypeORM, PostGIS queries     │
-│     Swagger docs at /api/docs    │
-└──────┬──────────────┬────────────┘
-       │              │
-       ▼              ▼
-┌─────────────┐  ┌─────────────────────┐
-│ FastAPI ML   │  │ PostgreSQL 15       │
-│ Service      │  │ + PostGIS 3.3       │
-│              │  │ 12 tables           │
-│ Chronos 40%  │  ├─────────────────────┤
-│ Prophet 30%  │  │ Redis 7             │
-│ LinReg  20%  │  │ (cache)             │
-│ MovAvg  10%  │  └─────────────────────┘
-└─────────────┘
+│     NestJS Backend API           │
+│     13 modules · Firebase Auth   │
+│     TypeORM · PostGIS queries    │
+│     Swagger at /api/docs         │
+└──────┬──────────┬────────────────┘
+       │          │
+       ▼          ▼
+┌────────────┐  ┌──────────────────┐
+│ PostgreSQL │  │ FastAPI ML        │
+│ 15+PostGIS │  │ Service           │
+│ 12 tables  │  │                   │
+│ 38+markets │  │ Chronos · Prophet │
+├────────────┤  │ LinReg · MovAvg   │
+│ Redis 7    │  │ Ensemble blend    │
+│ (cache)    │  └──────────────────┘
+└────────────┘
+
+External APIs:
+├─ data.gov.in ───── Live mandi commodity prices (6h cron)
+├─ OpenWeatherMap ── Temperature, rainfall, humidity
+├─ OpenRouteService  Road distances & travel times
+└─ Firebase ──────── Auth (Google + Email) · Cloud Messaging
 ```
 
-The mobile app talks to the NestJS backend over REST. The backend handles auth (Firebase ID token verification), serves crop/market/price data from PostgreSQL, and proxies prediction requests to the ML service. Predictions are cached for 24 hours to avoid redundant ML calls. The ML service is stateless — it receives historical price data and weather context in the request body and returns a 7-day forecast.
+The mobile app communicates with the NestJS backend over REST. The backend handles authentication (Firebase ID token verification via JWT guard), serves crop/market/price data from PostgreSQL, and proxies prediction requests to the Python ML service. Predictions are cached in the database for 24 hours. The ML service is stateless — it receives historical prices and weather context in the request body and returns a 7-day forecast.
 
-### How a Prediction Works
+### Prediction Flow
 
 ```
-User taps "Predict" on a crop
+User taps "Predict" on Tomato
         │
-        ▼
-Flutter Provider ───► GET /predictions/:cropId/markets/:marketId/forecast
+        ├─ Flutter: GET /predictions/:cropId/markets/:marketId/forecast
         │
-        ▼
-NestJS PredictionsService
-  ├─ Check DB cache (forecast generated today?) ──► YES → return cached
-  └─ NO → Fetch 90-day historical prices
-         Fetch weather forecast (OpenWeatherMap)
-         POST to ML Service /predict
-              │
-              ▼
-         FastAPI runs all 4 models
-           ├─ Chronos  (40% weight)
-           ├─ Prophet  (30% weight)
-           ├─ LinReg   (20% weight)
-           └─ MovAvg   (10% weight)
-           ──► Weighted ensemble → 7-day forecast
-              │
-              ▼
-         Cache in DB → Return to Flutter
-         Render chart + confidence intervals
+        ├─ NestJS: Check DB for cached forecast (generated today?)
+        │   ├─ HIT  → Return cached prediction
+        │   └─ MISS → Continue ↓
+        │
+        ├─ Fetch 90-day historical prices from PostgreSQL
+        ├─ Fetch weather forecast from OpenWeatherMap
+        │
+        ├─ POST to ML Service /predict
+        │   ├─ Chronos  → [36.5, 38.0, 42.0, 41.0, 39.5, 38.0, 37.0]
+        │   ├─ Prophet  → [36.0, 37.5, 41.0, 40.5, 39.0, 37.5, 36.5]
+        │   ├─ LinReg   → [36.8, 38.5, 43.0, 42.0, 40.0, 38.5, 37.2]
+        │   └─ MovAvg   → [36.2, 37.5, 40.8, 40.0, 38.9, 37.8, 36.9]
+        │
+        ├─ Weighted ensemble → 7-day forecast + confidence intervals
+        ├─ Cache in DB → Return to Flutter
+        └─ Render chart
 ```
-
-### How Sell/Wait Works
-
-The backend fetches the latest market price and the 7-day AI forecast. If the highest predicted price exceeds today's price by more than 2%, it recommends WAIT (prices are trending up). Otherwise, SELL. It returns a human-readable reason in both English and Tamil.
 
 ---
 
 ## Tech Stack
 
-| Component | Technology |
+### Mobile
+| Technology | Purpose |
 |---|---|
-| Mobile | Flutter 3.x, Dart |
-| State management | Riverpod |
-| Navigation | GoRouter |
-| HTTP | Dio with auth interceptors |
-| Auth | Firebase Authentication (Google + Email/Password) |
-| Backend | NestJS 10.x, TypeScript |
-| ORM | TypeORM |
-| Database | PostgreSQL 15 + PostGIS 3.3 |
-| Cache | Redis 7 |
-| ML service | FastAPI 0.104, Python 3.10+ |
-| ML models | Amazon Chronos (transformers), Facebook Prophet, scikit-learn |
-| Deep learning | PyTorch 2.1 |
-| Charts | fl_chart |
-| Voice | speech_to_text |
-| Localization | English + Tamil (intl + flutter_localizations) |
-| Push notifications | Firebase Cloud Messaging |
-| Geospatial | PostGIS (ST_DWithin, ST_Distance), Geolocator |
-| Road routing | OpenRouteService API |
-| Weather | OpenWeatherMap API |
-| Mandi data | data.gov.in Open Data API |
-| API docs | Swagger / OpenAPI |
-| Deployment | Docker Compose, Kubernetes, Nginx |
+| Flutter 3.x / Dart | Cross-platform mobile framework |
+| Riverpod | State management |
+| GoRouter | Declarative navigation |
+| Dio | HTTP client with auth interceptors |
+| fl_chart | Price charts and visualizations |
+| Geolocator | GPS location |
+| speech_to_text | Voice input for search |
+| SharedPreferences | Offline price cache |
+| Firebase Auth | Google Sign-In + Email/Password |
+| intl + flutter_localizations | English and Tamil (ARB-based) |
+
+### Backend
+| Technology | Purpose |
+|---|---|
+| NestJS 10.x / TypeScript | REST API framework |
+| TypeORM | Database ORM with migrations |
+| Passport + JWT | Authentication strategy |
+| @nestjs/schedule | Cron jobs (mandi ingestion, alert monitoring) |
+| Swagger / OpenAPI | Auto-generated API documentation |
+| Axios | HTTP client for external APIs |
+| firebase-admin | Firebase ID token verification, FCM push |
+| csv-parser | Historical price data loading |
+
+### Database & Cache
+| Technology | Purpose |
+|---|---|
+| PostgreSQL 15 | Primary data store |
+| PostGIS 3.3 | Spatial queries for market discovery |
+| Redis 7 | Caching layer |
+
+### Machine Learning
+| Technology | Purpose |
+|---|---|
+| FastAPI 0.104 | ML service API framework |
+| Amazon Chronos (transformers) | Zero-shot time-series forecasting |
+| Facebook Prophet | Seasonality-aware forecasting |
+| scikit-learn | Linear regression model |
+| PyTorch 2.1 | Deep learning backend for Chronos |
+| pandas / numpy | Data processing |
+
+### Infrastructure
+| Technology | Purpose |
+|---|---|
+| Docker Compose | Container orchestration (dev & prod) |
+| Kubernetes | Production manifests (deployments, ingress, secrets) |
+| Nginx | Reverse proxy with SSL termination (production) |
 
 ---
 
-## Project Layout
+## Project Structure
 
 ```
 agri_app/
-├── mobile/                     # Flutter app
+├── mobile/                          # Flutter app
 │   └── lib/
-│       ├── main.dart           # Entry point, Firebase init, Riverpod scope
-│       ├── config/             # Routes (GoRouter), theme, app constants
-│       ├── core/               # Auth service, Dio client, storage, utils
+│       ├── main.dart                # Firebase init, Riverpod scope, entry point
+│       ├── config/                  # GoRouter routes, theme, constants
+│       ├── core/                    # Auth service, Dio client, storage utils
 │       ├── data/
 │       │   ├── data_sources/
-│       │   │   ├── remote/     # 10 API clients (crop, market, prediction, alert, etc.)
-│       │   │   └── local/      # SharedPreferences offline cache
-│       │   ├── models/         # 12 Dart data models (fromJson/toJson)
-│       │   └── repositories/   # 10 repository classes
-│       ├── domain/             # 4 use cases (get_crop_prices, get_nearby_markets, etc.)
+│       │   │   ├── remote/          # 10 API clients (crop, market, prediction, alert...)
+│       │   │   └── local/           # SharedPreferences offline cache
+│       │   ├── models/              # 12 Dart data models
+│       │   └── repositories/        # Repository abstractions
+│       ├── domain/                  # Use cases
 │       ├── presentation/
-│       │   ├── screens/        # 22 screens
-│       │   ├── providers/      # 11 Riverpod providers
-│       │   └── widgets/        # 15+ reusable widgets (charts, cards, forms)
-│       └── l10n/               # ARB files for EN and TA
+│       │   ├── screens/             # 22+ screens (home, prices, predictions, markets...)
+│       │   ├── providers/           # 11 Riverpod providers
+│       │   └── widgets/             # Reusable cards, charts, forms
+│       └── l10n/                    # ARB localization files (EN + TA)
 │
-├── backend/                    # NestJS API
+├── backend/                         # NestJS API
 │   └── src/
-│       ├── main.ts             # Bootstrap, Firebase Admin init, Swagger, CORS
-│       ├── app.module.ts       # Root module (15 feature modules)
-│       ├── config/             # DB, JWT, Redis, Swagger config
-│       ├── common/             # Guards, decorators, pipes, interceptors, filters
+│       ├── main.ts                  # Bootstrap, Firebase Admin, Swagger, CORS
+│       ├── app.module.ts            # Root module (13 feature modules)
+│       ├── config/                  # DB, JWT, Redis, Swagger config
+│       ├── common/                  # Guards, decorators, pipes, filters
 │       └── modules/
-│           ├── auth/           # POST /auth/sync, GET /auth/profile
-│           ├── users/          # User entity, preferred market
-│           ├── crops/          # Crop + CropPrice entities, history endpoint
-│           ├── markets/        # PostGIS nearby search, profit-aware discovery
-│           ├── predictions/    # ML service client, 24h cache, sell/wait logic
-│           ├── recommendations/# Manual transport profit calculation
-│           ├── routing/        # OpenRouteService road distance API
-│           ├── transport/      # Truck + Booking entities, CRUD
-│           ├── alerts/         # Alert CRUD + hourly cron price monitor
-│           ├── weather/        # OpenWeatherMap integration
-│           ├── ml-service/     # HTTP wrapper for Python ML service
-│           ├── mandi-data/     # data.gov.in ingestion, 6h cron, 100+ commodity mappings
-│           ├── seed/           # Bootstrap seeder (crops, markets, prices, trucks)
-│           └── notifications/  # FCM push notification service
+│           ├── auth/                # Firebase sync, JWT guard
+│           ├── crops/               # Crop catalog, prices, history
+│           ├── markets/             # PostGIS nearby search, profit ranking
+│           ├── predictions/         # ML client, forecast cache, sell/wait
+│           ├── alerts/              # CRUD + hourly cron price monitor
+│           ├── transport/           # Trucks & bookings
+│           ├── routing/             # OpenRouteService road distances
+│           ├── recommendations/     # Transport profit calculation
+│           ├── weather/             # OpenWeatherMap integration
+│           ├── mandi-data/          # data.gov.in ingestion (6h cron)
+│           ├── ml-service/          # HTTP wrapper for Python ML
+│           ├── seed/                # Database bootstrap seeder
+│           └── notifications/       # FCM push notifications
 │
-├── ml-service/                 # Python ML microservice
+├── ml-service/                      # Python ML microservice
 │   └── app/
-│       ├── main.py             # FastAPI app, POST /predict, health check
-│       ├── config.py           # Model weights, forecast horizon, thresholds
-│       ├── services/
-│       │   └── prediction_service.py  # Orchestrates ensemble prediction
-│       ├── models/
-│       │   ├── chronos_forecaster.py  # Amazon Chronos (zero-shot time-series)
-│       │   ├── prophet_model.py       # Facebook Prophet
-│       │   ├── linear_regression.py   # scikit-learn LinearRegression
-│       │   ├── moving_average.py      # Weighted moving average
-│       │   └── ensemble.py            # Weighted blend of all models
-│       ├── schemas/            # Pydantic request/response validation
-│       └── utils/
-│           ├── data_processor.py      # Outlier removal, interpolation, cleaning
-│           ├── feature_engineer.py    # Calendar, weather, price, supply features
-│           ├── validators.py          # Input validation
-│           └── metrics.py             # MAE, RMSE, MAPE evaluation
+│       ├── main.py                  # FastAPI — POST /predict, GET / (health)
+│       ├── config.py                # Model weights, forecast horizon
+│       ├── services/                # Prediction orchestration
+│       ├── models/                  # Chronos, Prophet, LinReg, MovAvg, Ensemble
+│       ├── schemas/                 # Pydantic request/response validation
+│       └── utils/                   # Data cleaning, feature engineering, metrics
 │
 ├── deployment/
-│   ├── docker/                 # Multi-stage Dockerfiles (backend, ml-service, nginx)
-│   ├── kubernetes/             # Deployments, services, ingress, secrets
-│   ├── scripts/                # DB backup, seed, setup shell scripts
-│   ├── docker-compose.yml      # Dev deployment
-│   └── docker-compose.prod.yml # Prod with Nginx reverse proxy + SSL
+│   ├── docker/                      # Multi-stage Dockerfiles
+│   ├── kubernetes/                  # K8s manifests (deployments, ingress, secrets)
+│   ├── scripts/                     # DB backup, seed, setup scripts
+│   ├── docker-compose.yml           # Dev deployment
+│   └── docker-compose.prod.yml      # Prod with Nginx + SSL
 │
-├── docker-compose.yml          # Quick-start: PostgreSQL, Redis, ML service, backend
-└── start.ps1                   # One-click Windows launcher (Docker + backend + Flutter)
+├── docker-compose.yml               # Quick-start: all 4 services
+└── start.ps1                        # One-click Windows launcher
 ```
-
----
-
-## Database
-
-PostgreSQL 15 with the PostGIS extension. 12 tables:
-
-| Table | What it stores |
-|---|---|
-| `users` | Firebase-synced accounts (firebase_uid, phone, name, role, GPS location, FCM token) |
-| `otp_verifications` | Phone number OTP codes with expiry |
-| `crops` | Crop catalog — bilingual names (EN/TA), category, shelf life |
-| `markets` | Market locations — bilingual names, district, state, PostGIS GEOGRAPHY(Point) |
-| `crop_prices` | Historical price records — crop, market, price_per_kg, date, quality grade, source |
-| `market_arrivals` | Volume of crop arrivals at each market per day |
-| `weather_data` | Cached weather forecasts per market (temp, rainfall, humidity) |
-| `predictions` | AI forecast cache — predicted price, confidence, bounds, model used |
-| `recommendations` | Sell/Wait recommendations with bilingual reasoning |
-| `user_preferences` | Per-user crop watchlist with target prices and notification flags |
-| `alerts` | Price alerts — crop, alert type, bilingual messages, read status |
-| `notifications` | Push notification log — title, body, sent/pending/failed status |
-
-Key indexes: GIST spatial index on `markets.location` for fast nearby queries, composite indexes on `crop_prices(crop_id, market_id, record_date)`.
-
-### Seeded Data
-
-The backend auto-seeds on first startup and also ingests live data:
-- 5 core crops with Tamil names (Rice, Tomato, Onion, Potato, Banana)
-- 4 Tamil Nadu markets with verified GPS coordinates
-- 30 days of synthetic price history per crop-market pair
-- 3 trucks with varying capacity and rates
-- Every 6 hours: live mandi prices from data.gov.in for 100+ Tamil Nadu commodities across all active markets
-
----
-
-## ML Pipeline
-
-The prediction service runs four models independently and blends their outputs:
-
-| Model | Weight | Why |
-|---|---|---|
-| **Chronos** | 40% | Amazon's zero-shot time-series foundation model. Handles arbitrary crops without retraining. Strongest overall. |
-| **Prophet** | 30% | Facebook's seasonality-aware model. Good at weekly/yearly price cycles common in agriculture. Needs 14+ data points. |
-| **Linear Regression** | 20% | Fast, interpretable baseline. Captures simple trends. |
-| **Moving Average** | 10% | Smooths out daily noise. Useful as a sanity check against the heavier models. |
-
-**Ensemble formula:**
-```
-predicted_price[day] = Σ(model_price[day] × weight) / Σ(active_weights)
-```
-
-If a model fails (not enough data, timeout), its weight is redistributed to the remaining models.
-
-**Confidence score:** Based on the average spread between upper and lower bounds relative to the predicted price. Tighter bounds = higher confidence.
-
-**Trend classification:**
-
-| Condition | Trend | Recommendation |
-|---|---|---|
-| Predicted peak > current × 1.02 | UP | WAIT |
-| Predicted peak < current × 0.98 | DOWN | SELL |
-| Otherwise | STABLE | SELL |
-
----
-
-## API Endpoints
-
-Base URL: `http://localhost:3000/api/v1` — Authenticated endpoints require a Firebase Bearer token.
-
-### Auth
-| Method | Path | Description |
-|---|---|---|
-| POST | `/auth/sync` | Sync Firebase user to local DB |
-| GET | `/auth/profile` | Current user profile |
-
-### Crops
-| Method | Path | Description |
-|---|---|---|
-| GET | `/crops` | All crops |
-| GET | `/crops/:cropId/markets/:marketId/latest-price` | Latest price at a specific market |
-| GET | `/crops/:cropId/markets/:marketId/history?days=30` | Price history |
-
-### Markets
-| Method | Path | Description |
-|---|---|---|
-| GET | `/markets` | All active markets |
-| GET | `/markets/nearby?lat=&lon=&radius=&cropId=` | Nearby markets with profit ranking |
-
-### Predictions
-| Method | Path | Description |
-|---|---|---|
-| GET | `/predictions/:cropId/markets/:marketId/forecast` | 7-day AI forecast |
-| GET | `/predictions/:cropId?marketId=` | Sell/Wait recommendation |
-
-### Alerts
-| Method | Path | Description |
-|---|---|---|
-| POST | `/alerts` | Create price alert |
-| GET | `/alerts` | User's active alerts |
-| PATCH | `/alerts/:id` | Update alert |
-| DELETE | `/alerts/:id` | Delete alert |
-
-### Transport
-| Method | Path | Description |
-|---|---|---|
-| GET | `/transport/available` | Available trucks |
-| POST | `/transport/book` | Book a truck |
-| GET | `/transport/my-bookings` | User's bookings |
-
-### Intelligence
-| Method | Path | Description |
-|---|---|---|
-| POST | `/intelligence/transport-profit` | Net profit after transport (manual distance) |
-| POST | `/transport-profit` | Net profit with real road distance via OpenRouteService |
-
-### Weather
-| Method | Path | Description |
-|---|---|---|
-| GET | `/weather?lat=&lon=` | Weather at location |
-
-Swagger UI: `http://localhost:3000/api/docs`
-
----
-
-## Data Sources
-
-| Source | What | How |
-|---|---|---|
-| **data.gov.in** | Live mandi commodity prices (dataset `9ef84268`) | Cron job every 6h, 100+ TN commodity mappings, auto-creates markets, quintal-to-kg conversion |
-| **OpenWeatherMap** | Temperature, rainfall, humidity forecasts | On-demand per market, fed into ML models as features |
-| **OpenRouteService** | Real road distances and travel times | Driving-car profile, used for transport profit calculation |
-| **Firebase** | User authentication, push notifications | Google Sign-In + Email/Password, FCM for price alerts |
 
 ---
 
@@ -336,20 +282,27 @@ Swagger UI: `http://localhost:3000/api/docs`
 
 ### Prerequisites
 
-- **Docker Desktop** — for PostgreSQL, Redis, and the ML service
-- **Node.js 18+** — for the NestJS backend
-- **Flutter SDK 3.x** — for the mobile app
-- **Firebase project** — with Auth enabled (Email/Password + Google Sign-In)
+- **Docker Desktop** — PostgreSQL, Redis, and ML service run in containers
+- **Node.js 18+** — NestJS backend
+- **Flutter SDK 3.x** — Mobile app
+- **Firebase project** — with Authentication enabled (Email/Password + Google Sign-In)
 
 ### Quick Start (Windows)
 
-There's a PowerShell script that starts everything in one shot:
-
 ```powershell
+git clone https://github.com/adithyan-css/Agri_app.git
+cd Agri_app
 .\start.ps1
 ```
 
-It starts Docker Desktop (if not running), brings up the containers (PostgreSQL, Redis, ML service), starts the NestJS backend locally, sets up ADB reverse ports, and launches the Flutter app on a connected Android device.
+This script handles everything: starts Docker Desktop if needed, brings up PostgreSQL/Redis/ML containers, waits for health checks, starts the NestJS backend, sets up ADB port forwarding, and launches the Flutter app on your connected device.
+
+Options:
+```powershell
+.\start.ps1                    # Auto-detect Android device
+.\start.ps1 -Device chrome     # Run on Chrome
+.\start.ps1 -SkipFlutter       # Start services only
+```
 
 ### Manual Setup
 
@@ -360,41 +313,26 @@ cd Agri_app
 docker-compose up -d db redis ml-service
 ```
 
-**2. Configure the backend:**
+**2. Set up the backend:**
 ```bash
 cd backend
 npm install
-```
-
-Create `backend/.env`:
-```env
-PORT=3000
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=password
-DB_DATABASE=agriprice
-DB_SYNC=false
-JWT_SECRET=your_secret
-ML_SERVICE_URL=http://localhost:8000
-OPENWEATHER_API_KEY=your_key
-DATA_GOV_API_KEY=your_key
-OPENROUTE_API_KEY=your_key
+cp .env.example .env
+# Edit .env with your API keys (see Environment Variables below)
 ```
 
 **3. Start the backend:**
 ```bash
 npx nest start
 ```
-
-Backend at `http://localhost:3000`. Swagger at `http://localhost:3000/api/docs`.
+Backend runs at `http://localhost:3000`. Swagger docs at `http://localhost:3000/api/docs`.
 
 **4. Set up Firebase:**
 - Create a project at [console.firebase.google.com](https://console.firebase.google.com)
-- Enable Email/Password and Google Sign-In
-- Place `google-services.json` in `mobile/android/app/`
-- Place the Firebase Admin service account JSON in `backend/`
-- Run `flutterfire configure` from `mobile/`
+- Enable Email/Password and Google Sign-In under Authentication
+- Download `google-services.json` → place in `mobile/android/app/`
+- Generate a service account key → place in `backend/` as `firebase-service-account.json`
+- Run `flutterfire configure` from the `mobile/` directory
 
 **5. Run the Flutter app:**
 ```bash
@@ -403,10 +341,33 @@ flutter pub get
 flutter run
 ```
 
-For a physical Android device, set up port forwarding:
+For a physical Android device via USB:
 ```bash
-adb reverse tcp:3000 tcp:3000
-adb reverse tcp:8000 tcp:8000
+adb reverse tcp:3000 tcp:3000   # Backend
+adb reverse tcp:8000 tcp:8000   # ML Service
+flutter run
+```
+
+### Troubleshooting
+
+**Port 3000 in use:**
+```bash
+# Linux/Mac
+lsof -ti:3000 | xargs kill -9
+
+# Windows PowerShell
+Get-NetTCPConnection -LocalPort 3000 | Select -Expand OwningProcess | % { Stop-Process -Id $_ -Force }
+```
+
+**Docker containers won't start:**
+```bash
+docker-compose down -v
+docker-compose up -d
+```
+
+**Flutter build errors:**
+```bash
+flutter clean && flutter pub get && flutter run
 ```
 
 ---
@@ -415,20 +376,246 @@ adb reverse tcp:8000 tcp:8000
 
 ### Backend (`backend/.env`)
 
-| Variable | Purpose |
+| Variable | Required | Description |
+|---|---|---|
+| `PORT` | No | Server port (default: `3000`) |
+| `DB_HOST` | Yes | PostgreSQL host (default: `localhost`) |
+| `DB_PORT` | Yes | PostgreSQL port (default: `5432`) |
+| `DB_USERNAME` | Yes | Database user |
+| `DB_PASSWORD` | Yes | Database password |
+| `DB_DATABASE` | Yes | Database name (default: `agriprice`) |
+| `DB_SYNC` | No | TypeORM schema sync — set `false` in production |
+| `JWT_SECRET` | Yes | JWT signing key |
+| `ML_SERVICE_URL` | Yes | Python ML service URL (default: `http://localhost:8000`) |
+| `OPENWEATHER_API_KEY` | Yes | [OpenWeatherMap](https://openweathermap.org/api) API key |
+| `DATA_GOV_API_KEY` | Yes | [data.gov.in](https://data.gov.in/) API key for mandi prices |
+| `OPENROUTE_API_KEY` | Yes | [OpenRouteService](https://openrouteservice.org/) API key |
+
+A template is provided at `backend/.env.example` — copy it and fill in your keys.
+
+---
+
+## Running with Docker
+
+### Development
+
+The root `docker-compose.yml` starts the full stack:
+
+```bash
+docker-compose up -d
+```
+
+| Container | Port | Image |
+|---|---|---|
+| PostgreSQL 15 + PostGIS | 5432 | `postgis/postgis:15-3.3` |
+| Redis 7 | 6379 | `redis:7-alpine` |
+| ML Service | 8000 | Built from `./ml-service/Dockerfile` |
+| Backend | 3000 | Built from `./backend/Dockerfile` |
+
+PostgreSQL data persists in a named volume (`pgdata`).
+
+### Production
+
+```bash
+cd deployment
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+Production adds:
+- **Nginx** reverse proxy with SSL termination (ports 80/443)
+- Redis password authentication
+- `restart: always` on all services
+- Environment variables via `.env` file substitution
+- `NODE_ENV=production`, `ML_DEBUG=false`
+
+---
+
+## API Overview
+
+**Base URL:** `http://localhost:3000/api/v1`
+**Auth:** All endpoints require `Authorization: Bearer <firebase_token>` header.
+**Docs:** Swagger UI at `http://localhost:3000/api/docs`
+
+### Auth
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/auth/sync` | Sync Firebase user to local database |
+| GET | `/auth/profile` | Get current user profile |
+
+### Crops & Prices
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/crops` | All crops catalog |
+| GET | `/crops/market/:marketId/prices` | Latest price for every crop at a market |
+| GET | `/crops/:cropId/markets/:marketId/latest-price` | Latest price for one crop at one market |
+| GET | `/crops/:cropId/markets/:marketId/history?days=30` | Historical price data |
+
+### Markets
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/markets` | All active markets |
+| GET | `/markets/nearby?lat=&lon=&radius=&cropId=` | Nearby markets ranked by profit |
+
+### Predictions
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/predictions/:cropId/markets/:marketId/forecast` | 7-day AI forecast with confidence intervals |
+| GET | `/predictions/:cropId?marketId=` | Sell/Wait recommendation |
+
+### Alerts
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/alerts` | Create price alert |
+| GET | `/alerts` | Get user's active alerts |
+| PATCH | `/alerts/:id` | Toggle alert status |
+| DELETE | `/alerts/:id` | Deactivate alert |
+
+### Transport
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/transport/available` | Available trucks |
+| POST | `/transport/book` | Book a truck |
+| GET | `/transport/my-bookings` | User's bookings |
+
+### Intelligence
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/intelligence/transport-profit` | Net profit calculator (manual distance) |
+| POST | `/transport-profit` | Net profit with real road distance (OpenRouteService) |
+
+### Weather
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/weather?lat=&lon=` | Weather data for coordinates |
+
+### Users
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/users/me/preferred-market` | Get preferred market |
+| PATCH | `/users/me/preferred-market` | Set preferred market |
+
+---
+
+## ML Pipeline
+
+The Python ML service (`ml-service/`) runs on FastAPI and exposes a single prediction endpoint at `POST /predict`.
+
+### Models
+
+**Chronos (40% weight)** — Amazon's zero-shot time-series foundation model from the Hugging Face `transformers` library. Works on any crop without fine-tuning. Strongest contributor to the ensemble.
+
+**Prophet (30% weight)** — Facebook's additive regression model. Captures weekly and yearly seasonality patterns common in agricultural commodity cycles. Requires at least 14 data points.
+
+**Linear Regression (20% weight)** — scikit-learn OLS regression on engineered features (calendar, price lag, rolling stats). Fast, interpretable baseline.
+
+**Moving Average (10% weight)** — Weighted moving average with exponential decay. Smooths daily noise and serves as a stability anchor.
+
+### Ensemble
+
+```
+predicted_price[day] = Σ(model_price[day] × weight) / Σ(active_weights)
+```
+
+If a model fails, its weight is redistributed proportionally to the remaining models.
+
+### Confidence & Trend
+
+**Confidence score** — Based on the average spread between upper and lower bounds relative to the predicted price. Tighter bounds = higher confidence.
+
+**Trend classification:**
+
+| Condition | Trend | Action |
+|---|---|---|
+| Predicted peak > current × 1.02 | UP | **WAIT** — prices rising |
+| Predicted peak < current × 0.98 | DOWN | **SELL** — prices falling |
+| Otherwise | STABLE | **SELL** — no significant movement |
+
+### Feature Engineering
+
+The `utils/feature_engineer.py` module generates features for the regression model:
+- Calendar features (day of week, month, quarter)
+- Price features (lag values, rolling mean, rolling std, rate of change)
+- Weather features (temperature, rainfall, humidity)
+- Supply features (arrival volume trends)
+
+---
+
+## Database
+
+**PostgreSQL 15** with the **PostGIS 3.3** extension. 12 tables:
+
+| Table | Purpose |
 |---|---|
-| `PORT` | Server port (default: 3000) |
-| `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE` | PostgreSQL connection |
-| `DB_SYNC` | TypeORM auto-sync schema (set `false` in production) |
-| `JWT_SECRET` | JWT signing key |
-| `ML_SERVICE_URL` | Python ML service URL (default: `http://localhost:8000`) |
-| `OPENWEATHER_API_KEY` | OpenWeatherMap API key |
-| `DATA_GOV_API_KEY` | data.gov.in API key for mandi prices |
-| `OPENROUTE_API_KEY` | OpenRouteService API key for road distances |
+| `users` | Firebase-synced accounts (firebase_uid, phone, name, role, GPS, FCM token) |
+| `otp_verifications` | Phone OTP codes with expiry |
+| `crops` | Crop catalog — bilingual names (EN/TA), category, shelf life |
+| `markets` | Market locations — bilingual names, district, state, PostGIS `GEOGRAPHY(Point)` |
+| `crop_prices` | Historical price records per crop × market × date, quality grade, source |
+| `market_arrivals` | Volume of crop arrivals at each market per day |
+| `weather_data` | Cached weather forecasts per market |
+| `predictions` | AI forecast cache — predicted price, confidence, bounds, model |
+| `recommendations` | Sell/Wait recommendations with bilingual reasoning |
+| `user_preferences` | Per-user crop watchlist with target prices |
+| `alerts` | Price alerts — crop, type, bilingual messages, read status |
+| `notifications` | Push notification log — title, body, delivery status |
+
+**Key indexes:** GIST spatial index on `markets.location` for fast nearby queries. Composite index on `crop_prices(crop_id, market_id, record_date)`.
+
+### Seeded Data
+
+On first startup, the backend seeds:
+- 50+ crops with English and Tamil names across vegetables, fruits, grains, and spices
+- 38+ Tamil Nadu Uzhavar Sandhai APMC markets with verified GPS coordinates
+- Historical price records per crop-market pair
+- Sample trucks with capacity and rates
+
+The mandi data cron job then ingests live prices from data.gov.in every 6 hours, automatically matching 100+ commodity names to seeded crops and converting quintal prices to per-kg.
+
+### Data Sources
+
+| Source | Data | Method |
+|---|---|---|
+| **data.gov.in** | Live mandi commodity prices | 6-hour cron, 100+ TN commodity mappings, quintal→kg conversion |
+| **OpenWeatherMap** | Temperature, rainfall, humidity | On-demand per market, fed into ML models |
+| **OpenRouteService** | Road distances, travel times | Driving profile, used for transport profit |
+| **Firebase** | User auth, push notifications | Google + Email auth, FCM |
+
+---
+
+## Deployment
 
 ### Docker Compose
 
-The root `docker-compose.yml` spins up 4 containers: PostgreSQL 15 + PostGIS (port 5432), Redis 7 (port 6379), ML service (port 8000), and the backend (port 3000). PostgreSQL uses a named volume (`pgdata`) for persistence.
+Development:
+```bash
+docker-compose up -d
+```
+
+Production (with Nginx, SSL, Redis auth):
+```bash
+cd deployment
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Kubernetes
+
+Kubernetes manifests are provided in `deployment/kubernetes/`:
+
+| Manifest | Purpose |
+|---|---|
+| `backend-deployment.yaml` | NestJS backend pods + service |
+| `ml-service-deployment.yaml` | ML service pods + service |
+| `postgres-deployment.yaml` | PostgreSQL + PostGIS with PVC |
+| `redis-deployment.yaml` | Redis with PVC |
+| `ingress.yaml` | Ingress controller routing |
+| `secrets.yaml` | Environment secrets (DB creds, API keys, JWT) |
+
+### Database Backup
+
+```bash
+cd deployment/scripts
+./backup-db.sh
+```
 
 ---
 
@@ -436,29 +623,32 @@ The root `docker-compose.yml` spins up 4 containers: PostgreSQL 15 + PostGIS (po
 
 A farmer opens the app → Firebase authenticates them → the backend syncs their user record.
 
-They browse crops → the app fetches the crop list and latest prices from the backend, which serves data from PostgreSQL (seeded + live mandi ingestion).
+They browse prices → the app fetches the crop list and latest prices from the backend, which serves data from PostgreSQL (seeded data + live mandi prices ingested every 6 hours).
 
-They tap "Predict" on a crop → the Flutter provider calls `GET /predictions/:cropId/markets/:marketId/forecast` → the backend checks if a forecast was already generated today. If not, it fetches 90 days of historical prices, grabs the weather forecast from OpenWeatherMap, and POSTs everything to the Python ML service. The ML service runs all 4 models, blends them, and returns a 7-day forecast. The backend caches the result and returns it. The app renders a line chart with confidence intervals.
+They tap **"Predict"** on a crop → the Flutter provider calls the forecast endpoint → the backend checks if today's forecast exists in the DB cache. If not, it fetches 90 days of historical prices, grabs the weather forecast from OpenWeatherMap, and POSTs everything to the Python ML service. The ML service runs all 4 models, blends their outputs, and returns a 7-day forecast with confidence intervals. The backend caches the result and returns it. The app renders a line chart.
 
-They tap "AI Analysis" → the backend compares today's price against the forecast peak. If prices are trending up by >2%, it says WAIT with a human-readable reason. Otherwise, SELL.
+They tap **"AI Analysis"** → the backend compares the current price against the forecast peak. If prices are trending up by >2%, it says WAIT with a human-readable reason in English and Tamil. Otherwise, SELL.
 
-They tap "Nearby Markets" → the app sends GPS coordinates to `GET /markets/nearby` → the backend runs a PostGIS `ST_DWithin` query, fetches the latest price at each nearby market, calculates transport profit estimates, and returns markets ranked by net profit.
+They tap **"Nearby Markets"** → the app sends GPS coordinates → the backend runs a PostGIS spatial query, fetches the latest price at each nearby market, calls OpenRouteService for real road distances, and returns markets ranked by net profit after transport.
 
-They set a price alert → the backend stores it. An hourly cron job checks all active alerts against the latest prices and fires push notifications when thresholds are crossed.
+They set a **price alert** → the backend stores it. An hourly cron job checks all active alerts against the latest prices and sends a push notification via Firebase Cloud Messaging when a threshold crosses.
 
 ---
 
 ## Future Improvements
 
-- Real-time WebSocket price streaming
-- Satellite imagery integration (NDVI crop health monitoring)
-- Farmer-to-buyer direct marketplace
-- Government MSP (Minimum Support Price) alerts
-- Hindi, Kannada, and Telugu localization
-- On-device TensorFlow Lite for offline predictions
-- Farmer community groups and expert Q&A
-- Web analytics dashboard
-- SMS fallback for low-connectivity areas
+- **ML model persistence** — Save trained model weights to avoid retraining on every cold start
+- **Redis caching layer** — Cache frequently accessed price queries and crop lists beyond DB caching
+- **Rate limiting** — Protect endpoints from abuse with request throttling
+- **Push notification tracking** — Monitor FCM delivery success rates and retry failures
+- **WebSocket streaming** — Real-time price updates instead of polling
+- **Satellite imagery** — NDVI crop health monitoring via remote sensing
+- **On-device ML** — TensorFlow Lite for fully offline predictions
+- **Additional languages** — Hindi, Kannada, Telugu localization
+- **SMS fallback** — Price alerts via SMS for low-connectivity areas
+- **Farmer marketplace** — Direct farmer-to-buyer transactions
+- **Government MSP alerts** — Notify when prices fall below Minimum Support Price
+- **Web dashboard** — Analytics portal for market trends and historical patterns
 
 ---
 
@@ -466,17 +656,42 @@ They set a price alert → the backend stores it. An hourly cron job checks all 
 
 1. Fork the repo
 2. Create a branch: `git checkout -b feature/your-feature`
-3. Commit: `git commit -m "Add: description"`
-4. Push and open a PR
+3. Make changes and commit: `git commit -m "Add: description"`
+4. Push and open a Pull Request
 
-**Conventions:** Backend follows NestJS module pattern (controller + service + entity per module). Mobile follows Clean Architecture (presentation → domain → data). ML models go in `ml-service/app/models/` and must return `[{mean, low, high}]` per forecast day. Code style: Prettier + ESLint (TypeScript), flutter_lints (Dart), PEP 8 (Python).
+### Code Style
+
+| Layer | Tool | Command |
+|---|---|---|
+| Backend (TypeScript) | Prettier + ESLint | `cd backend && npm run lint` |
+| Mobile (Dart) | flutter_lints | `cd mobile && flutter analyze` |
+| ML Service (Python) | PEP 8 / Black | `cd ml-service && black app/` |
+
+### Conventions
+
+- Backend follows the NestJS module pattern — controller + service + entity per module
+- Mobile follows Clean Architecture — presentation → domain → data
+- ML models go in `ml-service/app/models/` and must return `[{mean, low, high}]` per forecast day
+- Commit messages: `Add:`, `Fix:`, `Update:`, `Docs:`
+
+### Running Tests
+
+```bash
+cd backend && npm test           # Backend unit tests
+cd mobile && flutter test        # Widget and unit tests
+cd ml-service && pytest          # ML service tests
+```
 
 ---
 
 ## License
 
-MIT
+MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-<p align="center">Built for Indian farmers.</p>
+<div align="center">
+
+**Built for Indian farmers. Technology for social good.** 🌾
+
+</div>

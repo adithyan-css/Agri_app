@@ -60,4 +60,14 @@ class CropApi {
       return cached ?? [];
     }
   }
+
+  /// Fetch latest prices for ALL crops at a given market (single API call).
+  Future<List<Map<String, dynamic>>> getAllCropPricesForMarket(String marketId) async {
+    try {
+      final response = await _dio.get('/crops/market/$marketId/prices');
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      return [];
+    }
+  }
 }

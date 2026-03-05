@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/colors.dart';
-import '../../../config/theme.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/market_provider.dart';
 import '../../widgets/common/green_gradient_header.dart';
@@ -20,43 +19,9 @@ class PricesScreen extends ConsumerStatefulWidget {
 class _PricesScreenState extends ConsumerState<PricesScreen> {
   String _selectedCrop = '';
 
-  String _getTamilName(String crop) {
-    switch (crop.toLowerCase()) {
-      case 'tomato':
-        return 'தக்காளி';
-      case 'onion':
-        return 'வெங்காயம்';
-      case 'potato':
-        return 'உருளைக்கிழங்கு';
-      case 'rice':
-        return 'அரிசி';
-      case 'wheat':
-        return 'கோதுமை';
-      default:
-        return crop;
-    }
-  }
-
-  IconData _getCropIcon(String crop) {
-    switch (crop.toLowerCase()) {
-      case 'tomato':
-        return Icons.circle;
-      case 'onion':
-        return Icons.circle;
-      case 'potato':
-        return Icons.circle;
-      case 'rice':
-        return Icons.grass;
-      case 'wheat':
-        return Icons.grass;
-      default:
-        return Icons.eco;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final cropsAsync = ref.watch(cropListProvider);
+    final pricesAsync = ref.watch(allCropPricesProvider);
     final selectedMarket = ref.watch(selectedMarketProvider);
 
     return Scaffold(
@@ -136,223 +101,171 @@ class _PricesScreenState extends ConsumerState<PricesScreen> {
               ),
             ),
 
-          // Crop tabs — driven by actual crop list
-          cropsAsync.when(
-            data: (crops) {
-              if (_selectedCrop.isEmpty && crops.isNotEmpty) {
-                // Auto-select the first crop
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted && _selectedCrop.isEmpty) {
-                    setState(() => _selectedCrop = crops.first.nameEn);
-                  }
-                });
-              }
-              return Container(
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: crops.map((crop) {
-                      final isSelected = _selectedCrop == crop.nameEn;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: GestureDetector(
-                          onTap: () => setState(() => _selectedCrop = crop.nameEn),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _getCropIcon(crop.nameEn),
-                                  size: 14,
-                                  color: isSelected ? Colors.white : AppColors.textSecondary,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  crop.nameEn,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected ? Colors.white : AppColors.textSecondary,
+          Expanded(
+            child: pricesAsync.when(
+              data: (prices) {
+                if (_selectedCrop.isEmpty && prices.isNotEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted && _selectedCrop.isEmpty) {
+                      setState(() => _selectedCrop = prices.first['nameEn']?.toString() ?? '');
+                    }
+                  });
+                }
+
+                // Find selected crop's price data
+                final selectedData = prices.where(
+                  (p) => p['nameEn']?.toString() == _selectedCrop,
+                ).toList();
+                final selectedPrice = selectedData.isNotEmpty
+                    ? (selectedData.first['price'] as num?)?.toDouble() ?? 0.0
+                    : 0.0;
+                final selectedSource = selectedData.isNotEmpty
+                    ? selectedData.first['source']?.toString() ?? ''
+                    : '';
+                final selectedTamil = selectedData.isNotEmpty
+                    ? selectedData.first['nameTa']?.toString() ?? ''
+                    : '';
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(allCropPricesProvider);
+                  },
+                  child: ListView(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    children: [
+                      // Crop filter chips
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: prices.map((p) {
+                              final name = p['nameEn']?.toString() ?? '';
+                              final isSelected = _selectedCrop == name;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _selectedCrop = name),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? AppColors.primary : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: isSelected ? null : Border.all(color: Colors.grey.shade300),
+                                    ),
+                                    child: Text(
+                                      name,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: isSelected ? Colors.white : AppColors.textSecondary,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+
+                      // Price overview card for selected crop
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.gradientStart, AppColors.gradientEnd],
                             ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _selectedCrop.isNotEmpty ? _selectedCrop : 'Select a crop',
+                                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                              ),
+                              if (selectedTamil.isNotEmpty)
+                                Text(
+                                  selectedTamil,
+                                  style: const TextStyle(color: Colors.white60, fontSize: 12),
+                                ),
+                              const SizedBox(height: 8),
+                              Text(
+                                selectedPrice > 0
+                                    ? '₹${selectedPrice.toStringAsFixed(2)}/kg'
+                                    : 'No price data',
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              if (selectedSource == 'nearby_market')
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    'Price from nearby market',
+                                    style: TextStyle(color: Colors.white60, fontSize: 11),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              );
-            },
-            loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 8, bottom: 24),
-              children: [
-                // Price overview card
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.gradientStart, AppColors.gradientEnd],
                       ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _selectedCrop.isNotEmpty ? _selectedCrop : 'Select a crop',
-                          style: const TextStyle(color: Colors.white70, fontSize: 14),
-                        ),
-                        Text(
-                          _selectedCrop.isNotEmpty ? _getTamilName(_selectedCrop) : '',
-                          style: const TextStyle(color: Colors.white60, fontSize: 12),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Tap a crop above',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
 
-                SectionHeader(
-                  title: 'Price Trend',
-                  actionLabel: 'View Full Prices',
-                  onAction: () => context.push('/predictions'),
-                ),
-
-                // Trend chart — will show real data when crop detail is viewed
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 8,
-                        ),
-                      ],
+                      // All crop prices
+                      const SectionHeader(title: 'All Crop Prices'),
+                      ...prices.map((p) {
+                        final name = p['nameEn']?.toString() ?? '';
+                        final tamil = p['nameTa']?.toString();
+                        final price = (p['price'] as num?)?.toDouble() ?? 0.0;
+                        final cropId = p['cropId']?.toString() ?? '';
+                        final source = p['source']?.toString() ?? '';
+                        return widgets.PriceCard(
+                          cropName: name,
+                          cropNameTamil: tamil,
+                          price: price,
+                          change: 0.0,
+                          updatedAt: source == 'nearby_market' ? 'Nearby market' : null,
+                          onTap: () {
+                            setState(() => _selectedCrop = name);
+                            context.push('/crop-detail/$cropId?name=${Uri.encodeComponent(name)}');
+                          },
+                        );
+                      }),
+                    ],
+                  ),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Could not load prices',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
                     ),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          'Tap a crop to view detailed price trends and 7-day forecast',
-                          style: AppTextStyles.caption,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () => ref.invalidate(allCropPricesProvider),
+                      child: const Text('Retry'),
                     ),
-                  ),
+                  ],
                 ),
-
-                // All crop prices
-                const SectionHeader(title: 'All Crop Prices'),
-                cropsAsync.when(
-                  data: (crops) => Column(
-                    children: crops.map((crop) {
-                      return widgets.PriceCard(
-                        cropName: crop.nameEn,
-                        cropNameTamil: crop.nameTa,
-                        price: 0.0,
-                        change: 0.0,
-                        onTap: () {
-                          setState(() => _selectedCrop = crop.nameEn);
-                          context.push('/crop-detail/${crop.id}?name=${Uri.encodeComponent(crop.nameEn)}');
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  loading: () => const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  error: (err, _) => Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Center(child: Text(
-                      'Could not load prices. Pull to refresh.',
-                      style: TextStyle(color: Colors.grey.shade500),
-                    )),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
       ),
       bottomNavigationBar: const BottomNavBar(currentIndex: 2),
-    );
-  }
-}
-
-class _PriceStat extends StatelessWidget {
-  final String label;
-  final String value;
-  const _PriceStat({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 11)),
-        Text(
-          value,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-}
-
-class _BarChart extends StatelessWidget {
-  final String label;
-  final double value;
-  final bool highlight;
-  const _BarChart({required this.label, required this.value, this.highlight = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          width: 28,
-          height: 80 * value,
-          decoration: BoxDecoration(
-            color: highlight
-                ? AppColors.primary
-                : AppColors.primaryLight.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(6),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: AppTextStyles.caption),
-      ],
     );
   }
 }
