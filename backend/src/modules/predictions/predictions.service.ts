@@ -1,4 +1,4 @@
-import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -146,11 +146,45 @@ export class PredictionsService {
         }
 
         // Step 1: Get the current (latest) price for this crop at this market
-        const latestPrice = await this.cropsService.getLatestPrice(cropId, marketId);
+        let latestPrice: any;
+        try {
+            latestPrice = await this.cropsService.getLatestPrice(cropId, marketId);
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                return {
+                    recommendation: 'WAIT',
+                    trend: 'UNKNOWN',
+                    currentPrice: 0,
+                    predictedPrice: 0,
+                    avgPredictedPrice: 0,
+                    expectedProfit: 0,
+                    confidence: 0,
+                    reason: 'No price data available for this crop at the selected market yet. Please check back later.',
+                    predictions: [],
+                };
+            }
+            throw error;
+        }
         const currentPrice = Number(latestPrice.pricePerKg);
 
         // Step 2: Get the AI forecast (uses cache or calls ML service)
-        const forecast = await this.getAiForecast(cropId, marketId);
+        let forecast: any;
+        try {
+            forecast = await this.getAiForecast(cropId, marketId);
+        } catch (error) {
+            this.logger.warn(`AI forecast unavailable for crop=${cropId} market=${marketId}: ${error.message}`);
+            return {
+                recommendation: 'SELL',
+                trend: 'UNKNOWN',
+                currentPrice,
+                predictedPrice: currentPrice,
+                avgPredictedPrice: currentPrice,
+                expectedProfit: 0,
+                confidence: 0,
+                reason: `AI prediction service is temporarily unavailable. Current price is ₹${currentPrice.toFixed(2)}/kg.`,
+                predictions: [],
+            };
+        }
         const predictions: Prediction[] = forecast.data;
 
         if (!predictions || predictions.length === 0) {

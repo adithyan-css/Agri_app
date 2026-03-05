@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/road_profit_model.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/api_endpoints.dart';
 
 final roadProfitApiProvider = Provider<RoadProfitApi>((ref) {
   final dio = ref.watch(dioProvider);
@@ -24,7 +25,7 @@ class RoadProfitApi {
     required double quantity,
     double radiusKm = 100,
   }) async {
-    final response = await _dio.post('/transport-profit', data: {
+    final response = await _dio.post(ApiEndpoints.roadTransportProfit, data: {
       'farmerLat': farmerLat,
       'farmerLng': farmerLng,
       'cropId': cropId,

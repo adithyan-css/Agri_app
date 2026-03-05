@@ -9,6 +9,6 @@ export const databaseConfig = (configService: ConfigService): TypeOrmModuleOptio
     password: configService.get<string>('DB_PASSWORD', 'postgres'),
     database: configService.get<string>('DB_DATABASE', 'agriprice'),
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: configService.get<string>('DB_SYNC', 'false') === 'true',
+    synchronize: false,
     autoLoadEntities: true,
 });

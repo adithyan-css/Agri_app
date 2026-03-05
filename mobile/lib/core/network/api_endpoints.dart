@@ -27,4 +27,7 @@ class ApiEndpoints {
 
   // Intelligence
   static const String transportProfit = '/intelligence/transport-profit';
+
+  // Road routing (ORS-powered)
+  static const String roadTransportProfit = '/transport-profit';
 }

@@ -44,7 +44,7 @@ export class RoutingService {
 
         const response = await axios.post(this.baseUrl, body, {
             headers: {
-                Authorization: this.apiKey,
+                Authorization: `Bearer ${this.apiKey}`,
                 'Content-Type': 'application/json',
             },
             timeout: 10_000,
@@ -71,8 +71,9 @@ export class RoutingService {
         destinations: { lng: number; lat: number; id: string }[],
     ): Promise<Map<string, RouteResult>> {
         const results = new Map<string, RouteResult>();
+        const capped = destinations.slice(0, 20);
 
-        for (const dest of destinations) {
+        for (const dest of capped) {
             try {
                 const route = await this.getRoute(fromLng, fromLat, dest.lng, dest.lat);
                 results.set(dest.id, route);
