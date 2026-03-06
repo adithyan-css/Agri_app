@@ -16,6 +16,35 @@
 
 ---
 
+## 📱 Screenshots & Demo
+
+> 🎬 **[Watch the Full Demo Video →](https://drive.google.com/file/d/1UlUzuQ_02DlLu67UCDEGOeNCTLpilq6r/view?usp=drivesdk)**
+
+<div align="center">
+<table>
+  <tr>
+    <td align="center"><b>🏠 Home Screen</b></td>
+    <td align="center"><b>🏪 Markets</b></td>
+    <td align="center"><b>🤖 AI Analysis</b></td>
+    <td align="center"><b>📊 Market Factors</b></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/home_screen.png" width="220" alt="Home Screen - AI recommendations, crop prices, nearby markets"/></td>
+    <td><img src="screenshots/markets_screen.png" width="220" alt="Markets - Browse and filter nearby mandis"/></td>
+    <td><img src="screenshots/ai_analysis.png" width="220" alt="AI Analysis - SELL/WAIT recommendation with confidence score"/></td>
+    <td><img src="screenshots/ai_analysis_details.png" width="220" alt="Market Factors - Price trend, supply, and potential gain"/></td>
+  </tr>
+  <tr>
+    <td><sub>AI-powered WAIT/SELL recommendations, live crop prices, and nearby market discovery</sub></td>
+    <td><sub>92 Tamil Nadu markets with filters — Nearest, Best Price, Under 10km</sub></td>
+    <td><sub>87.5% confidence SELL recommendation with 7-day predicted price trend chart</sub></td>
+    <td><sub>Price trend (DOWN), market supply (INCREASING), and potential gain analysis</sub></td>
+  </tr>
+</table>
+</div>
+
+---
+
 ## The Problem
 
 Indian farmers lose an estimated ₹50,000 crores annually because they sell at the wrong time, at the wrong market, to the wrong buyer. A tomato farmer in Salem might sell at ₹35/kg locally while Coimbatore pays ₹42/kg — but he doesn't know that. And even if he did, he can't tell whether prices will climb further next week, or whether the transport costs will eat the profit.
@@ -26,6 +55,7 @@ AgriPrice AI puts that intelligence in his pocket. It pulls live government mand
 
 ## Table of Contents
 
+- [Screenshots & Demo](#-screenshots--demo)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)

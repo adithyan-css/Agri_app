@@ -24,8 +24,9 @@ export class PredictionsService {
     ) { }
 
     async getAiForecast(cropId: string, marketId: string): Promise<any> {
-        // Resolve 'default' to the first market in the DB
-        if (!marketId || marketId === 'default') {
+        // Resolve 'default' or invalid UUIDs to the first market in the DB
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!marketId || marketId === 'default' || !uuidRegex.test(marketId)) {
             const fallback = await this.marketRepository.findOne({ where: {}, order: { nameEn: 'ASC' } });
             if (fallback) marketId = fallback.id;
         }
@@ -139,8 +140,9 @@ export class PredictionsService {
      * Returns: trend, recommendation, expected_profit, confidence
      */
     async getSellOrWaitRecommendation(cropId: string, marketId: string): Promise<any> {
-        // Resolve 'default' to the first market in the DB
-        if (!marketId || marketId === 'default') {
+        // Resolve 'default' or invalid UUIDs to the first market in the DB
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!marketId || marketId === 'default' || !uuidRegex.test(marketId)) {
             const fallback = await this.marketRepository.findOne({ where: {}, order: { nameEn: 'ASC' } });
             if (fallback) marketId = fallback.id;
         }

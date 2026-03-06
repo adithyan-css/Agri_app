@@ -131,20 +131,22 @@ export class CropsService {
             fallbackMap.set(fp.cropId, fp);
         }
 
-        return crops.map(crop => {
-            const mp = marketPriceMap.get(crop.id);
-            const fp = fallbackMap.get(crop.id);
-            const record = mp || fp;
-            return {
-                cropId: crop.id,
-                nameEn: crop.nameEn,
-                nameTa: crop.nameTa,
-                category: crop.category,
-                price: record ? Number(record.pricePerKg) : 0,
-                marketId: record?.marketId ?? marketId,
-                recordDate: record?.recordDate ?? null,
-                source: mp ? 'selected_market' : (fp ? 'nearby_market' : 'none'),
-            };
-        });
+        return crops
+            .map(crop => {
+                const mp = marketPriceMap.get(crop.id);
+                const fp = fallbackMap.get(crop.id);
+                const record = mp || fp;
+                return {
+                    cropId: crop.id,
+                    nameEn: crop.nameEn,
+                    nameTa: crop.nameTa,
+                    category: crop.category,
+                    price: record ? Number(record.pricePerKg) : 0,
+                    marketId: record?.marketId ?? marketId,
+                    recordDate: record?.recordDate ?? null,
+                    source: mp ? 'selected_market' : (fp ? 'nearby_market' : 'none'),
+                };
+            })
+            .filter(item => item.price > 0);
     }
 }
